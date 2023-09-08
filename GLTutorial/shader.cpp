@@ -44,6 +44,11 @@ void Shader::addUniform1f(const std::string& name, float x) const {
     glUniform1f(glGetUniformLocation(_shaderProgram, name.c_str()), x);
 }
 
+void Shader::addUniformMat4(const std::string& name, glm::mat4 data) {
+    glUseProgram(_shaderProgram);
+    glUniformMatrix4fv(glGetUniformLocation(_shaderProgram, name.c_str()), 1, GL_FALSE, glm::value_ptr(data));
+}
+
 unsigned int Shader::createShaderProgram() {
     int success;
     char infoLog[512];

@@ -88,6 +88,8 @@ int main(void)
     float dx = 0.01f;
     float dy = 0.01f;
 
+    glm::mat4 trans = glm::mat4(1.0f);
+
     float colors[4][3] = { {1.0f, 1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f} };
     float r = 1.0f;
     float g = 1.0f;
@@ -107,7 +109,7 @@ int main(void)
 
         float time = glfwGetTime();
 
-        if (x >= 0.75f || x <= -0.75f) {
+        if (x >= 1.0f || x <= -1.0f) {
             dx = -dx;
             if (i < 3) {
                 i += 1;
@@ -117,19 +119,19 @@ int main(void)
             }
             
 
-            r = colors[i][0];
             g = colors[i][1];
             b = colors[i][2];
         }
-        if (y >= 0.75f || y <= -0.75f) {
+        if (y >= 1.0f || y <= -1.0f) {
             dy = -dy;
         }
         
-        x = x + dx;
-        y = y + dy;
+        x += dx;
+        y += dy;
+            
+        trans = glm::translate(trans, glm::vec3(dx, dy, 0.0f));
 
-        shaderProgramObj.addUniform1f("x", x);
-        shaderProgramObj.addUniform1f("y", y);
+        shaderProgramObj.addUniformMat4("trans", trans);
         shaderProgramObj.addUniform4f("currColor", 1.0f - sin(x) / 2, g, b, 1.0f);
         glUseProgram(shaderProgram);
 
