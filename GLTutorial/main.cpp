@@ -110,6 +110,11 @@ int main(void)
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
+    float x = 0.0f, y = 0.0f, z = 0.0f;
+    float dx = 0.01f, dy = 0.0f, dz = 0.01f;
+
+    glm::mat4 translate = glm::mat4(1.0f);
+
     /* Loop until the user closes the window */ 
     while (!glfwWindowShouldClose(window))
     {   
@@ -118,11 +123,23 @@ int main(void)
         /* Render here */
         glEnable(GL_DEPTH_TEST);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
+
         loader.bindTextures();
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+        
+        x += dx;
+        y += dy;
+        z += dz;
+
+        if (x >= 1.0f || x <= -1.0f) dx = -dx;
+        if (y >= 1.0f || y <= -1.0f) dy = -dy;
+        if (z >= 3.0f || z <= 0.0f) dz = -dz;
+        
+        std::cout << "position: " << "(x: " << x << ", y: " << y << ", z: " << z << ")" << std::endl;
+
+        translate = glm::translate(translate, glm::vec3(dx, dy, -dz));
 
         glm::mat4 view = glm::mat4(1.0f);
         view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
@@ -133,6 +150,8 @@ int main(void)
         shaderProgramObj.addUniformMat4("model", model);
         shaderProgramObj.addUniformMat4("view", view);
         shaderProgramObj.addUniformMat4("projection", projection);
+        shaderProgramObj.addUniformMat4("translate", translate);
+        shaderProgramObj.addUniform4f("ourColor", 0.5f + sin(x) / 2, 0.5f + sin(y) / 2, 0.5f + sin(z) / 2, 1.0f);
         glUseProgram(shaderProgram);
 
         glBindVertexArray(VAO); 
