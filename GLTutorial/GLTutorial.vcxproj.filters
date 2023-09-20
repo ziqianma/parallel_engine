@@ -30,12 +30,27 @@
     <ClCompile Include="texture.cpp">
       <Filter>Source Files\src</Filter>
     </ClCompile>
+    <ClCompile Include="vbo.cpp">
+      <Filter>Source Files\src</Filter>
+    </ClCompile>
+    <ClCompile Include="vao.cpp">
+      <Filter>Source Files\src</Filter>
+    </ClCompile>
+    <ClCompile Include="camera.h">
+      <Filter>Source Files\src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="vertex.shader">
       <Filter>Resource Files\shaders</Filter>
     </None>
     <None Include="frag.shader">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="fragLight.shader">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="vertexLight.shader">
       <Filter>Resource Files\shaders</Filter>
     </None>
   </ItemGroup>
@@ -50,6 +65,12 @@
       <Filter>Source Files\src</Filter>
     </ClInclude>
     <ClInclude Include="texture.h">
+      <Filter>Source Files\src</Filter>
+    </ClInclude>
+    <ClInclude Include="vao.h">
+      <Filter>Source Files\src</Filter>
+    </ClInclude>
+    <ClInclude Include="vbo.h">
       <Filter>Source Files\src</Filter>
     </ClInclude>
   </ItemGroup>
