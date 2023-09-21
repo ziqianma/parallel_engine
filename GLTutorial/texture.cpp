@@ -13,7 +13,7 @@ void TextureLoader::addTexture(int textureUnit, Texture tex) {
 	textures.insert(std::pair<int, Texture>(textureUnit, tex));
 }
 
-void TextureLoader::loadTexture(int textureUnit) {
+void TextureLoader::loadTexture(int textureUnit, GLint wrapSParam, GLint wrapTParam, GLint minFilter, GLint magFilter) {
     auto iterator = textures.find(textureUnit);
     unsigned int textureID;
 
@@ -29,10 +29,10 @@ void TextureLoader::loadTexture(int textureUnit) {
 	glBindTexture(GL_TEXTURE_2D, textureID);
 
     // set the texture wrapping/filtering options (on the currently bound texture object)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapSParam);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapTParam);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
 
     // Load in texture data
     stbi_set_flip_vertically_on_load(true);

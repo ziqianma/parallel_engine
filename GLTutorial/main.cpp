@@ -49,16 +49,28 @@ int main(void)
 
     std::cout << glGetString(GL_VERSION) << std::endl;
    
+    TextureLoader loader;
+
+    Texture texture = Texture::Texture(0, "redstone_lamp_on.png");
+    loader.addTexture(0, texture);
+    loader.loadTexture(0, GL_REPEAT, GL_REPEAT, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST_MIPMAP_NEAREST);
+
+    Texture texture1 = Texture::Texture(1, "gold_block.png");
+    loader.addTexture(1, texture1);
+    loader.loadTexture(1, GL_REPEAT, GL_REPEAT, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST_MIPMAP_NEAREST);
+
     // create shader
     Shader shaderProgramObj = Shader::Shader("vertex.shader", "frag.shader");
     unsigned int shaderProgram = shaderProgramObj.createShaderProgram();
     shaderProgramObj.addUniform1f("ambientIntensity", ambientIntensity);
+    shaderProgramObj.addUniform1i("texture1", 0);
+    shaderProgramObj.addUniform1i("texture2", 1);
 
     Shader shaderProgramLightObj = Shader::Shader("vertexLight.shader", "fragLight.shader");
     unsigned int shaderProgramLight = shaderProgramLightObj.createShaderProgram();
 
-    VAO vao = VAO::VAO(std::vector<float>(vertices, vertices + sizeof(vertices) / sizeof(vertices[0])), std::vector<int>({ 3, 3 }), 6);
-    VAO lightVao = VAO::VAO(std::vector<float>(vertices, vertices + sizeof(vertices) / sizeof(vertices[0])), std::vector<int>({ 3, 3 }), 6);
+    VAO vao = VAO::VAO(std::vector<float>(vertices, vertices + sizeof(vertices) / sizeof(vertices[0])), std::vector<int>({ 3, 3, 2 }), 8);
+    VAO lightVao = VAO::VAO(std::vector<float>(vertices, vertices + sizeof(vertices) / sizeof(vertices[0])), std::vector<int>({ 3, 3, 2 }), 8);
 
     /* Loop until the user closes the window */ 
     while (!glfwWindowShouldClose(window))
@@ -82,7 +94,9 @@ int main(void)
         /* Render here */
         glEnable(GL_DEPTH_TEST);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-     
+
+        loader.bindTextures();
+
         glUseProgram(shaderProgram);
 
         shaderProgramObj.addUniform3f("lightColor", lightColor.x, lightColor.y, lightColor.z);
@@ -96,6 +110,10 @@ int main(void)
         model = glm::rotate(model, glm::radians(45.0f), glm::vec3(0.5f, 1.0f, 0.0f));
         shaderProgramObj.addUniformMat4("model", model);
         shaderProgramObj.addUniformMat3("normalMatrix", glm::mat3(glm::transpose(glm::inverse(model))));
+        
+
+        lightPos.x = sin((float)glfwGetTime());
+        lightPos.z = cos((float)glfwGetTime());
 
         shaderProgramObj.addUniform3f("lightPos", lightPos.x, lightPos.y, lightPos.z);  
         shaderProgramObj.addUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);

@@ -5,6 +5,6 @@ Repository for whatever opengl stuff I'm currently working on
 
 ![](Animation6.gif)
 
-Phong Lighting Model:
+Phong Lighting demo:
 
-![](phong_lighting.png)
+![](spec_light_demo)

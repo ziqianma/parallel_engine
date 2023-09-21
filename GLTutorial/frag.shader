@@ -2,6 +2,7 @@
 
 in vec3 Normal;
 in vec3 FragPos;
+in vec2 texCoord;
 
 out vec4 FragColor;
 
@@ -10,6 +11,9 @@ uniform vec3 objectColor;
 uniform float ambientIntensity;
 uniform vec3 lightPos;
 uniform vec3 viewPos;
+
+uniform sampler2D texture1;
+uniform sampler2D texture2;
 
 void main()
 {
@@ -26,7 +30,7 @@ void main()
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 256);
     vec3 specular = specularStrength * spec * lightColor;
 
-    vec3 result = (ambientComponent + diffuseComponent + specular) * objectColor;
+    vec3 result = (ambientComponent + diffuseComponent + specular) * vec3(texture(texture2, texCoord));
 
     FragColor = vec4(result, 1.0);
 }   
