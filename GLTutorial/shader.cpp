@@ -34,6 +34,11 @@ void Shader::addUniform4f(const std::string& name, float x, float y, float z, fl
     glUniform4f(glGetUniformLocation(_shaderProgram, name.c_str()), x, y, z, w);
 }
 
+void Shader::addUniform3f(const std::string& name, float x, float y, float z) const {
+    glUseProgram(_shaderProgram);
+    glUniform3f(glGetUniformLocation(_shaderProgram, name.c_str()), x, y, z);
+}
+
 void Shader::addUniform1i(const std::string& name, int x) const {
     glUseProgram(_shaderProgram);
     glUniform1i(glGetUniformLocation(_shaderProgram, name.c_str()), x);
@@ -47,6 +52,11 @@ void Shader::addUniform1f(const std::string& name, float x) const {
 void Shader::addUniformMat4(const std::string& name, glm::mat4 data) {
     glUseProgram(_shaderProgram);
     glUniformMatrix4fv(glGetUniformLocation(_shaderProgram, name.c_str()), 1, GL_FALSE, glm::value_ptr(data));
+}
+
+void Shader::addUniformMat3(const std::string& name, glm::mat3 data) {
+    glUseProgram(_shaderProgram);
+    glUniformMatrix3fv(glGetUniformLocation(_shaderProgram, name.c_str()), 1, GL_FALSE, glm::value_ptr(data));
 }
 
 unsigned int Shader::createShaderProgram() {
