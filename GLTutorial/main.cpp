@@ -16,7 +16,7 @@ float lastFrame = 0.0f;
 // light
 float ambientIntensity = 0.1f;
 glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
-glm::vec4 lightColor(1.0f, 1.0f, 1.0f, 1.0f);
+glm::vec3 lightColor;
 
 int main(void)  
 {
@@ -62,7 +62,11 @@ int main(void)
     // create shader
     Shader shaderProgramObj = Shader::Shader("vertex.shader", "frag.shader");
     unsigned int shaderProgram = shaderProgramObj.createShaderProgram();
-    shaderProgramObj.addUniform1f("ambientIntensity", ambientIntensity);
+    shaderProgramObj.addUniform3f("material.ambient", 1.0f, 0.5f, 0.31f);
+    shaderProgramObj.addUniform3f("material.diffuse", 1.0f, 0.5f, 0.31f);
+    shaderProgramObj.addUniform3f("material.specular", 0.5f, 0.5f, 0.5f);
+    shaderProgramObj.addUniform1f("material.shininess", 32.0f);
+
     shaderProgramObj.addUniform1i("texture1", 0);
     shaderProgramObj.addUniform1i("texture2", 1);
 
@@ -99,24 +103,31 @@ int main(void)
 
         glUseProgram(shaderProgram);
 
-        shaderProgramObj.addUniform3f("lightColor", lightColor.x, lightColor.y, lightColor.z);
-        shaderProgramObj.addUniform3f("objectColor", 1.0f, 0.5f, 1.0f);
-
         glm::mat4 view = camera.GetViewMatrix();
         shaderProgramObj.addUniformMat4("view", view);
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         shaderProgramObj.addUniformMat4("projection", projection);
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::rotate(model, glm::radians(45.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+        model = glm::rotate(model, glm::radians((float)glfwGetTime() + 45.0f), glm::vec3(0.5f, 1.0f, 0.0f));
         shaderProgramObj.addUniformMat4("model", model);
         shaderProgramObj.addUniformMat3("normalMatrix", glm::mat3(glm::transpose(glm::inverse(model))));
-        
+       
 
-        lightPos.x = sin((float)glfwGetTime());
-        lightPos.z = cos((float)glfwGetTime());
-
-        shaderProgramObj.addUniform3f("lightPos", lightPos.x, lightPos.y, lightPos.z);  
+        shaderProgramObj.addUniform3f("light.position", lightPos.x, lightPos.y, lightPos.z);
         shaderProgramObj.addUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
+
+        lightColor.x = sin(glfwGetTime() * 2.0f);
+        lightColor.y = sin(glfwGetTime() * 0.7f);
+        lightColor.z = sin(glfwGetTime() * 1.3f);
+
+        shaderProgramLightObj.addUniform3f("lightColor", lightColor.x, lightColor.y, lightColor.z);
+
+        glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f);
+        glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f);
+
+        shaderProgramObj.addUniform3f("light.ambient", ambientColor.x, ambientColor.y, ambientColor.z);
+        shaderProgramObj.addUniform3f("light.diffuse", diffuseColor.x, diffuseColor.y, diffuseColor.z); // darken diffuse light a bit
+        shaderProgramObj.addUniform3f("light.specular", 1.0f, 1.0f, 1.0f);
 
         glBindVertexArray(vao.getId());
         glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -127,7 +138,6 @@ int main(void)
         model = glm::translate(model, lightPos);
         model = glm::scale(model, glm::vec3(0.2f));
 
-        shaderProgramLightObj.addUniform3f("lightColor", lightColor.x, lightColor.y, lightColor.z);
         shaderProgramLightObj.addUniformMat4("model", model);
         shaderProgramLightObj.addUniformMat4("view", view);
         shaderProgramLightObj.addUniformMat4("projection", projection);
