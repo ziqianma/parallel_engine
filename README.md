@@ -8,3 +8,7 @@ Repository for whatever opengl stuff I'm currently working on
 Phong Lighting demo:
 
 ![](spec_light_demo.gif)
+
+Lighting maps demo:
+
+![](lighting_maps.gif)
