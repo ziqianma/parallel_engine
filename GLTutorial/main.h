@@ -1,6 +1,9 @@
 #pragma once
 
 #include "common.h"
+#include "shader.h"
+#include "model.h"
+#include "camera.h"
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);

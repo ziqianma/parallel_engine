@@ -1,7 +1,6 @@
 #include "main.h"
-#include "shader.h"
-#include "vao.h"
-#include "camera.h"
+
+#include "stb_image.h"  
 
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 float lastX = SCR_WIDTH / 2.0f;
@@ -35,18 +34,21 @@ int main(void)
 
     // tell GLFW to capture our mouse
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
+        
     
     if (glewInit() != GLEW_OK)
         std::cout << "GLEW Error" << std::endl;
 
-
     std::cout << glGetString(GL_VERSION) << std::endl;
    
-    // create shader
-    Shader shaderProgramObj = Shader::Shader("vertex.shader", "frag.shader");
-    unsigned int shaderProgram = shaderProgramObj.createShaderProgram();
+    stbi_set_flip_vertically_on_load(true);
 
+    glEnable(GL_DEPTH_TEST);
+
+    // create shader
+    Shader ourShader = Shader::Shader("vertex.shader", "frag.shader");
+
+    Model ourModel("C:/Users/Andy Ma.DESKTOP-49718PJ/Desktop/GLTutorial/opengl_fun/GLTutorial/backpack.obj");
 
     /* Loop until the user closes the window */ 
     while (!glfwWindowShouldClose(window))
@@ -67,24 +69,30 @@ int main(void)
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
             camera.ProcessKeyboard(RIGHT, dt);
 
-        /* Render here */
-        glEnable(GL_DEPTH_TEST);
+        // render
+        // ------
+        glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glUseProgram(shaderProgram);
+        // don't forget to enable shader before setting uniforms
+        glUseProgram(ourShader.createShaderProgram());
 
-        glm::mat4 view = camera.GetViewMatrix();
-        shaderProgramObj.addUniformMat4("view", view);
+        // view/projection transformations
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        shaderProgramObj.addUniformMat4("projection", projection);
+        glm::mat4 view = camera.GetViewMatrix();
+        ourShader.addUniformMat4("projection", projection);
+        ourShader.addUniformMat4("view", view);
 
-
-        shaderProgramObj.addUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
-        
+        // render the loaded model
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
+        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
+        ourShader.addUniformMat4("model", model);
+        ourModel.Draw(ourShader);
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
 
-        /* Poll for and process events */
+        /* Poll for and process events */   
         glfwPollEvents();
     }
 

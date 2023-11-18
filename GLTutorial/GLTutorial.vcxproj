@@ -144,8 +144,6 @@
     <ClCompile Include="mesh.cpp" />
     <ClCompile Include="model.cpp" />
     <ClCompile Include="shader.cpp" />
-    <ClCompile Include="vao.cpp" />
-    <ClCompile Include="vbo.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="frag.shader" />
@@ -160,8 +158,6 @@
     <ClInclude Include="mesh.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="stb_image.h" />
-    <ClInclude Include="vao.h" />
-    <ClInclude Include="vbo.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
