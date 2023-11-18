@@ -27,9 +27,6 @@
     <ClCompile Include="shader.cpp">
       <Filter>Source Files\src</Filter>
     </ClCompile>
-    <ClCompile Include="texture.cpp">
-      <Filter>Source Files\src</Filter>
-    </ClCompile>
     <ClCompile Include="vbo.cpp">
       <Filter>Source Files\src</Filter>
     </ClCompile>
@@ -37,6 +34,12 @@
       <Filter>Source Files\src</Filter>
     </ClCompile>
     <ClCompile Include="camera.h">
+      <Filter>Source Files\src</Filter>
+    </ClCompile>
+    <ClCompile Include="mesh.cpp">
+      <Filter>Source Files\src</Filter>
+    </ClCompile>
+    <ClCompile Include="model.cpp">
       <Filter>Source Files\src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -64,13 +67,19 @@
     <ClInclude Include="shader.h">
       <Filter>Source Files\src</Filter>
     </ClInclude>
-    <ClInclude Include="texture.h">
-      <Filter>Source Files\src</Filter>
-    </ClInclude>
     <ClInclude Include="vao.h">
       <Filter>Source Files\src</Filter>
     </ClInclude>
     <ClInclude Include="vbo.h">
+      <Filter>Source Files\src</Filter>
+    </ClInclude>
+    <ClInclude Include="mesh.h">
+      <Filter>Source Files\src</Filter>
+    </ClInclude>
+    <ClInclude Include="model.h">
+      <Filter>Source Files\src</Filter>
+    </ClInclude>
+    <ClInclude Include="common.h">
       <Filter>Source Files\src</Filter>
     </ClInclude>
   </ItemGroup>
