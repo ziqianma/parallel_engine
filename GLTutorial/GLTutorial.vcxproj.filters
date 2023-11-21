@@ -50,6 +50,9 @@
     <None Include="vertexLight.shader">
       <Filter>Resource Files\shaders</Filter>
     </None>
+    <None Include="shaderBorderColor.shader">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stb_image.h">

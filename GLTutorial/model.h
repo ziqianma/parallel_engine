@@ -2,6 +2,7 @@
 #define MODEL_H
 
 #include "mesh.h"
+#include <map>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -16,7 +17,7 @@ public:
 	}
 	void Draw(Shader& shader);
 private:
-    std::vector<Texture> loadedTextures;
+    std::map<std::string, Texture> loadedTextures;
 	std::vector<Mesh> meshes;
 	std::string directory;
 	void loadModel(std::string path);

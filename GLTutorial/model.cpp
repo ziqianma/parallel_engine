@@ -84,6 +84,8 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 		std::vector<Texture> specularMaterials = loadMaterialTextures(material, aiTextureType::aiTextureType_SPECULAR, "texture_specular");
 		textures.insert(textures.end(), specularMaterials.begin(), specularMaterials.end());
 
+		std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
+		textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 	}
 
 	return Mesh(vertices, indices, textures);
@@ -95,23 +97,18 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType 
 		aiString path;			
 		mat->GetTexture(type, i, &path);
 		bool skip = false;
-		for (unsigned int j = 0; j < loadedTextures.size(); j++)
-		{
-			if (std::strcmp(loadedTextures[j].path, path.C_Str()) == 0)
-			{
-				result.push_back(loadedTextures[j]);
-				skip = true;
-				break;
-			}
+		Texture loadedTexture = loadedTextures[path.C_Str()];
+		if (loadedTexture.path) {
+			result.push_back(loadedTexture);
 		}
-		if (!skip)
+		else 
 		{   // if texture hasn't been loaded already, load it
 			Texture texture;
 			texture.id = TextureFromFile(path.C_Str(), directory);
 			texture.type = typeName;
 			texture.path = path.C_Str();
 			result.push_back(texture);
-			loadedTextures.push_back(texture);
+			loadedTextures[path.C_Str()] = texture;
 		}	
 	}
 	return result;
