@@ -29,3 +29,7 @@ Phong Lighting demo:
 Lighting maps demo:
 
 ![](lighting_maps.gif)
+
+Model loading, lighting, stencil buffer demo:
+
+![](model_load.gif)

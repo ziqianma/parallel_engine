@@ -103,7 +103,7 @@ int main(void)
             model = glm::translate(model, vec);
             model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
             lightShader.addUniformMat4("model", model);
-            lightCube.Draw(lightShader);
+            //lightCube.Draw(lightShader);
         }
 
         // don't forget to enable shader before setting uniforms
