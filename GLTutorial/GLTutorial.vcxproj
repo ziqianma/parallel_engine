@@ -153,6 +153,7 @@
     <None Include="frag.shader" />
     <None Include="fragLight.shader" />
     <None Include="shaderBorderColor.shader" />
+    <None Include="shaderBorderColorVertex.shader" />
     <None Include="vertex.shader" />
     <None Include="vertexLight.shader" />
   </ItemGroup>

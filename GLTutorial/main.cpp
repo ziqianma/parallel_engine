@@ -51,11 +51,11 @@ int main(void)
 
     // create shader
     Shader ourShader = Shader::Shader("vertex.shader", "frag.shader");
-    Shader borderShader = Shader::Shader("vertex.shader", "shaderBorderColor.shader");
+    Shader borderShader = Shader::Shader("shaderBorderColorVertex.shader", "shaderBorderColor.shader");
     Shader lightShader = Shader::Shader("vertexLight.shader", "fragLight.shader");
 
     std::string workingDir = std::filesystem::current_path().generic_string();
-    Model ourModel(workingDir + "/" + "backpack.obj");  
+    Model ourModel(workingDir + "/" + "resources/model/backpack/backpack.obj");  
 
     /* Loop until the user closes the window */ 
     while (!glfwWindowShouldClose(window))  
@@ -128,13 +128,11 @@ int main(void)
         borderShader.addUniformMat4("view", view);
 
         model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(1.1f, 1.1f, 1.1f));
         borderShader.addUniformMat4("model", model);
         ourModel.Draw(borderShader);
 
-        model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0f));
-        model = glm::scale(model, glm::vec3(0.6f, 0.6f, 0.6f));
+        model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
         borderShader.addUniformMat4("model", model);
         ourModel.Draw(borderShader);
 
