@@ -39,7 +39,7 @@ void main()
 
     vec3 viewDir = normalize(viewPos - FragPos);
     vec3 reflectDir = reflect(-lightDir, normal);        
-    vec3 specularComponent = pointLight.specular * textureSpecular * max(pow(dot(viewDir, reflectDir), 128.0f), 0.0f);
+    vec3 specularComponent = pointLight.specular * textureSpecular * max(pow(dot(viewDir, reflectDir), 63.0f), 0.0f);
 
     FragColor = vec4(ambientComponent + diffuseComponent + specularComponent, 1.0f);
 }

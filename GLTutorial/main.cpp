@@ -1,5 +1,6 @@
 #include "main.h"
 #include "stb_image.h"  
+#include "cube.h"  
 
 #include <filesystem>
 
@@ -56,6 +57,8 @@ int main(void)
 
     std::string workingDir = std::filesystem::current_path().generic_string();
     Model ourModel(workingDir + "/" + "resources/model/backpack/backpack.obj");  
+    
+    Cube lightCube = Cube::Cube();
 
     /* Loop until the user closes the window */ 
     while (!glfwWindowShouldClose(window))  
@@ -81,20 +84,40 @@ int main(void)
         glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
+        glUseProgram(lightShader.createShaderProgram());
+        glm::mat4 model = glm::mat4(1.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        glm::mat4 view = camera.GetViewMatrix();
+
+        glm::vec3 lightMove = glm::vec3(sin(glfwGetTime()), 0, 0);
+        glm::vec3 lightPos1 = glm::vec3(cubePositions[0].x + sin(glfwGetTime()) / 4, cubePositions[0].y, cubePositions[0].z);
+
+        lightShader.addUniformMat4("view", view);
+        lightShader.addUniformMat4("projection", projection);
+        lightShader.addUniform3f("lightColor", 1.0f, 1.0f, 1.0f);
+        
+        for (glm::vec3 vec : cubePositions) {
+            model = glm::mat4(1.0f);
+            vec += lightMove;
+
+            model = glm::translate(model, vec);
+            model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+            lightShader.addUniformMat4("model", model);
+            lightCube.Draw(lightShader);
+        }
+
         // don't forget to enable shader before setting uniforms
         glUseProgram(ourShader.createShaderProgram());
 
         // global light
         ourShader.addUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
-        ourShader.addUniform3f("pointLight.ambient", 0.1f, 0.1f, 0.1f);
+        ourShader.addUniform3f("pointLight.ambient", 0.1f, 0.1f, 0.1f); 
         ourShader.addUniform3f("pointLight.diffuse", 0.7f, 0.7f, 0.7f);
         ourShader.addUniform3f("pointLight.specular", 1.0f, 1.0f, 1.0f);
-        ourShader.addUniform3f("pointLight.position", 2.0f, 1.0f, 1.0f);
+        ourShader.addUniform3f("pointLight.position", lightPos1.x, lightPos1.y, lightPos1.z);
 
         // view/projection transformations
-        glm::mat4 model = glm::mat4(1.0f);
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f,100.0f);
-        glm::mat4 view = camera.GetViewMatrix();
+        model = glm::mat4(1.0f);
         ourShader.addUniformMat4("projection", projection);
         ourShader.addUniformMat4("view", view);
 
@@ -109,7 +132,7 @@ int main(void)
         ourShader.addUniformMat4("model", model);
         ourModel.Draw(ourShader);
 
-        model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0f));
+        model = glm::translate(model, glm::vec3(2.0f, 0.0f, 3.0f));
         model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
         ourShader.addUniformMat4("model", model);
         ourModel.Draw(ourShader);
@@ -131,7 +154,7 @@ int main(void)
         borderShader.addUniformMat4("model", model);
         ourModel.Draw(borderShader);
 
-        model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0f));
+        model = glm::translate(model, glm::vec3(2.0f, 0.0f, 3.0f));
         model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
         borderShader.addUniformMat4("model", model);
         ourModel.Draw(borderShader);

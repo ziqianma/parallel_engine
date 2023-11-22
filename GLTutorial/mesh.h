@@ -2,17 +2,12 @@
 
 #include "common.h"
 #include "shader.h"
+#include "textures.h"
 
 struct Vertex {
 	glm::vec3 position;
 	glm::vec3 normal;
 	glm::vec2 texCoord;
-};
-
-struct Texture {
-	unsigned int id;
-	std::string type; //"diffuse" or "specular"
-	const char* path; 
 };
 
 class Mesh {

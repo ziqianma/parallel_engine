@@ -7,8 +7,6 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-unsigned int TextureFromFile(const char* path, const std::string& directory, bool gamma = false);
-
 class Model {
 public:
 	std::string path;
@@ -17,7 +15,6 @@ public:
 	}
 	void Draw(Shader& shader);
 private:
-    std::map<std::string, Texture> loadedTextures;
 	std::vector<Mesh> meshes;
 	std::string directory;
 	void loadModel(std::string path);

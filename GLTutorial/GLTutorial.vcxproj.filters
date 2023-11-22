@@ -36,6 +36,12 @@
     <ClCompile Include="model.cpp">
       <Filter>Source Files\src</Filter>
     </ClCompile>
+    <ClCompile Include="cube.cpp">
+      <Filter>Source Files\src</Filter>
+    </ClCompile>
+    <ClCompile Include="textures.cpp">
+      <Filter>Source Files\src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="vertex.shader">
@@ -74,6 +80,12 @@
       <Filter>Source Files\src</Filter>
     </ClInclude>
     <ClInclude Include="common.h">
+      <Filter>Source Files\src</Filter>
+    </ClInclude>
+    <ClInclude Include="cube.h">
+      <Filter>Source Files\src</Filter>
+    </ClInclude>
+    <ClInclude Include="textures.h">
       <Filter>Source Files\src</Filter>
     </ClInclude>
   </ItemGroup>
