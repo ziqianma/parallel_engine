@@ -11,41 +11,50 @@ public:
     void Draw(Shader &shader);
 private:
     Texture cubeTexture;
-    unsigned int VAO, VBO, EBO;
-    float cubeVertices[24] {
-        -1, -1,  0.5, //0
-            1, -1,  0.5, //1
-        -1,  1,  0.5, //2
-            1,  1,  0.5, //3
-        -1, -1, -0.5, //4
-            1, -1, -0.5, //5
-        -1,  1, -0.5, //6
-            1,  1, -0.5  //7
-    };
-    unsigned int cubeIndices[36] {
-        //Top
-        2, 6, 7,
-        2, 3, 7,
-
-        //Bottom
-        0, 4, 5,
-        0, 1, 5,
-
-        //Left
-        0, 2, 6,
-        0, 4, 6,
-
-        //Right
-        1, 3, 7,
-        1, 5, 7,
-
-        //Front
-        0, 2, 3,
-        0, 1, 3,
-
-        //Back
-        4, 6, 7,
-        4, 5, 7
+    unsigned int VAO, VBO;
+    float cubeVertices[180] = {
+        // Back face
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, // Bottom-left
+         0.5f, -0.5f, -0.5f,  1.0f, 0.0f, // bottom-right    
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f, // top-right              
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f, // top-right
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, // top-left
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, // bottom-left                
+        // Front face
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, // bottom-left
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f, // top-right
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f, // bottom-right        
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f, // top-right
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, // bottom-left
+        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, // top-left        
+        // Left face
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, // top-right
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, // bottom-left
+        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f, // top-left       
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, // bottom-left
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, // top-right
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, // bottom-right
+        // Right face
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f, // top-left
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f, // top-right      
+         0.5f, -0.5f, -0.5f,  0.0f, 1.0f, // bottom-right          
+         0.5f, -0.5f, -0.5f,  0.0f, 1.0f, // bottom-right
+         0.5f, -0.5f,  0.5f,  0.0f, 0.0f, // bottom-left
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f, // top-left
+        // Bottom face          
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, // top-right
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f, // bottom-left
+         0.5f, -0.5f, -0.5f,  1.0f, 1.0f, // top-left        
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f, // bottom-left
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, // top-right
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, // bottom-right
+        // Top face
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, // top-left
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f, // top-right
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f, // bottom-right                 
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f, // bottom-right
+        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, // bottom-left  
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f  // top-left              
     };
     unsigned int textureID = -1;
     void setupCubeMesh();

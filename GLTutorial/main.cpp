@@ -54,11 +54,60 @@ int main(void)
     Shader ourShader = Shader::Shader("vertex.shader", "frag.shader");
     Shader borderShader = Shader::Shader("shaderBorderColorVertex.shader", "shaderBorderColor.shader");
     Shader lightShader = Shader::Shader("vertexLight.shader", "fragLight.shader");
-
+    Shader framebufferShader = Shader::Shader("framebuffervertex.shader", "framebufferfrag.shader");
+        
     std::string workingDir = std::filesystem::current_path().generic_string();
     Model ourModel(workingDir + "/" + "resources/model/backpack/backpack.obj");  
     
     Cube lightCube = Cube::Cube();
+
+    glUseProgram(framebufferShader.createShaderProgram());
+    framebufferShader.addUniform1i("screenTexture", 0);
+
+    // framebufffer
+    unsigned int fbo;   
+    glGenFramebuffers(1, &fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+    // attach color reference to framebuffer
+    unsigned int texColorBuffer;
+    glGenTextures(1, &texColorBuffer);
+    glBindTexture(GL_TEXTURE_2D, texColorBuffer);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColorBuffer, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    // attach depth and stencil buffers with rbo
+    unsigned int rbo;
+    glGenRenderbuffers(1, &rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+    glBindFramebuffer(GL_FRAMEBUFFER, 0); // detach framebuffer
+
+    // framebuffer quad
+    unsigned int quadVAO, quadVBO;
+    glGenVertexArrays(1, &quadVAO);
+    glGenBuffers(1, &quadVBO);
+
+    glBindVertexArray(quadVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+
+    glBindVertexArray(0);
 
     /* Loop until the user closes the window */ 
     while (!glfwWindowShouldClose(window))  
@@ -81,6 +130,9 @@ int main(void)
 
         // render
         // ------   
+            
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo); 
+        glEnable(GL_DEPTH_TEST);
         glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
@@ -93,17 +145,17 @@ int main(void)
         glm::vec3 lightPos1 = glm::vec3(cubePositions[0].x + sin(glfwGetTime()) / 4, cubePositions[0].y, cubePositions[0].z);
 
         lightShader.addUniformMat4("view", view);
-        lightShader.addUniformMat4("projection", projection);
-        lightShader.addUniform3f("lightColor", 1.0f, 1.0f, 1.0f);
+        lightShader.addUniformMat4("projection", projection);   
+        lightShader.addUniform3f("lightColor", 1.0f, 0.0f, 0.0f);
         
-        for (glm::vec3 vec : cubePositions) {
+        for (glm::vec3 vec : cubePositions) {   
             model = glm::mat4(1.0f);
             vec += lightMove;
 
             model = glm::translate(model, vec);
             model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
             lightShader.addUniformMat4("model", model);
-            //lightCube.Draw(lightShader);
+            lightCube.Draw(lightShader);
         }
 
         // don't forget to enable shader before setting uniforms
@@ -163,6 +215,17 @@ int main(void)
         glStencilMask(0xFF);
         glStencilFunc(GL_ALWAYS, 1, 0xFF);
         glEnable(GL_DEPTH_TEST);
+
+        // second pass
+        glBindFramebuffer(GL_FRAMEBUFFER, 0); // back to default
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        glUseProgram(framebufferShader.createShaderProgram());
+        glBindVertexArray(quadVAO);
+        glDisable(GL_DEPTH_TEST);
+        glBindTexture(GL_TEXTURE_2D, texColorBuffer);   
+        glDrawArrays(GL_TRIANGLES, 0, 6);
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);

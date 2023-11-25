@@ -154,6 +154,8 @@
   <ItemGroup>
     <None Include="frag.shader" />
     <None Include="fragLight.shader" />
+    <None Include="framebufferfrag.shader" />
+    <None Include="framebuffervertex.shader" />
     <None Include="shaderBorderColor.shader" />
     <None Include="shaderBorderColorVertex.shader" />
     <None Include="vertex.shader" />

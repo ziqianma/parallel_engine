@@ -62,6 +62,12 @@
     <None Include="shaderBorderColorVertex.shader">
       <Filter>Resource Files\shaders</Filter>
     </None>
+    <None Include="framebuffervertex.shader">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="framebufferfrag.shader">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stb_image.h">
