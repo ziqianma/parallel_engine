@@ -3,16 +3,24 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h" 
 
-std::map<const char*, Texture> TextureLoader::loadedTextures;
+std::map<const std::string, Texture> TextureLoader::loadedTextures;
 
 Texture TextureLoader::loadTexture(const char* path, const std::string& directory, std::string typeName) {
-	Texture texture = loadedTextures[path];
-	if (!texture.path) {
-		texture.id = TextureFromFile(path, directory, false);
-		texture.type = typeName;
-		texture.path = path;
-		loadedTextures[path] = texture;
+	for (const auto& [texPath, texture] : loadedTextures) {
+		if (path == texPath) {
+			return texture;
+		}
 	}
+
+	Texture texture;
+
+	texture.id = TextureFromFile(path, directory, false);
+	texture.type = typeName;
+	texture.path = path;
+
+	std::string textureKey = std::string(path);
+	loadedTextures[textureKey] = texture;
+	
 
 	return texture;
 }

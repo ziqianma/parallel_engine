@@ -81,8 +81,8 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 		std::vector<Texture> specularMaterials = loadMaterialTextures(material, aiTextureType::aiTextureType_SPECULAR, "texture_specular");
 		textures.insert(textures.end(), specularMaterials.begin(), specularMaterials.end());
 
-		std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
-		textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
+		std::vector<Texture> bumpMaps = loadMaterialTextures(material, aiTextureType::aiTextureType_NORMALS, "texture_bump");
+		textures.insert(textures.end(), bumpMaps.begin(), bumpMaps.end());
 	}
 
 	return Mesh(vertices, indices, textures);
@@ -91,8 +91,8 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName) {
 	std::vector<Texture> result;
 
-	aiString path;
 	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++) {
+		aiString path;
 		mat->GetTexture(type, i, &path);
 
 		// will put all textures for the current model of type "typeName" into the TextureLoader

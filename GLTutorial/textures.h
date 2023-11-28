@@ -13,6 +13,6 @@ public:
 	static int getTexturesSize();
 	static Texture getTexture(const char* path);
 private:
-	static std::map<const char*, Texture> loadedTextures;
+	static std::map<const std::string, Texture> loadedTextures;
 	static unsigned int TextureFromFile(const char* path, const std::string& directory, bool gamma);
 };

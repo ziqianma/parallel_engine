@@ -18,7 +18,6 @@ uniform PointLight pointLight;
 struct Material {
     sampler2D texture_diffuse1;
     sampler2D texture_specular1;
-    sampler2D texture_height1;
 };
 
 uniform Material material;
@@ -27,7 +26,7 @@ uniform vec3 viewPos;
 
 void main()
 {
-    vec3 textureAmbient = texture(material.texture_height1, TexCoords).rgb;
+    vec3 textureAmbient = texture(material.texture_diffuse1, TexCoords).rgb;
     vec3 textureDiffuse = texture(material.texture_diffuse1, TexCoords).rgb;
     vec3 textureSpecular = texture(material.texture_specular1, TexCoords).rgb;
 

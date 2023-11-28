@@ -4,10 +4,13 @@
 #include "shader.h"
 #include "model.h"
 #include "camera.h"
+#include "cube.h"  
 
+#include <filesystem>
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void DrawScene(Shader& lightShader, Shader& ourShader, Shader& borderShader, Cube& lightCube, Model& ourModel);
 
 glm::vec3 pointLightPositions[] = {
     glm::vec3(0.7f,  0.2f,  2.0f),
@@ -29,7 +32,7 @@ glm::vec3 cubePositions[] = {
     glm::vec3(-1.3f,  1.0f, -1.5f)
 };
 
-float quadVertices[] = {
+float quadVertices[] = {  
     // positions   // texCoords
     -1.0f,  1.0f,  0.0f, 1.0f,
     -1.0f, -1.0f,  0.0f, 0.0f,
@@ -38,6 +41,17 @@ float quadVertices[] = {
     -1.0f,  1.0f,  0.0f, 1.0f,
      1.0f, -1.0f,  1.0f, 0.0f,
      1.0f,  1.0f,  1.0f, 1.0f
+};	
+
+float rearMirror[] = {
+    // positions   // texCoords
+    -0.25f,  1.0f,  0.0f, 1.0f,
+    -0.25f, 0.75f,  0.0f, 0.0f,
+     0.25f, 0.75f,  1.0f, 0.0f,
+
+    -0.25f,  1.0f,  0.0f, 1.0f,
+     0.25f, 0.75f,  1.0f, 0.0f,
+     0.25f,  1.0f,  1.0f, 1.0f
 };
 
 const unsigned int SCR_WIDTH = 800;

@@ -56,6 +56,7 @@ private:
         -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, // bottom-left  
         -0.5f,  0.5f, -0.5f,  0.0f, 1.0f  // top-left              
     };
-    unsigned int textureID = -1;
+    unsigned int textureID;
+    bool hasTexture = false;
     void setupCubeMesh();
 };
