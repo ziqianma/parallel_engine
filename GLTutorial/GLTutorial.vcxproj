@@ -158,6 +158,8 @@
     <None Include="framebuffervertex.shader" />
     <None Include="shaderBorderColor.shader" />
     <None Include="shaderBorderColorVertex.shader" />
+    <None Include="skyboxFrag.shader" />
+    <None Include="skyboxVertex.shader" />
     <None Include="vertex.shader" />
     <None Include="vertexLight.shader" />
   </ItemGroup>

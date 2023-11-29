@@ -25,14 +25,6 @@ Texture TextureLoader::loadTexture(const char* path, const std::string& director
 	return texture;
 }
 
-int TextureLoader::getTexturesSize() {
-	return loadedTextures.size();
-}
-
-Texture TextureLoader::getTexture(const char* path) {
-	return loadedTextures[path];
-}
-
 unsigned int TextureLoader::TextureFromFile(const char* path, const std::string& directory, bool gamma)
 {
 	std::string filename = std::string(path);

@@ -68,6 +68,12 @@
     <None Include="framebufferfrag.shader">
       <Filter>Resource Files\shaders</Filter>
     </None>
+    <None Include="skyboxVertex.shader">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="skyboxFrag.shader">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stb_image.h">

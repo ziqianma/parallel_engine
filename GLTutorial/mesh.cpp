@@ -1,10 +1,14 @@
 #include "mesh.h"
 
 // Constrctor intializes mesh data along with VAO, VBO and EBO
-Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures) {
+Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular) {
 	this->vertices = vertices;
 	this->indices = indices;
 	this->textures = textures;
+
+	this->ambient = ambient;
+	this->diffuse = diffuse;
+	this->specular = specular;
 	setupMesh();
 }
 
@@ -61,6 +65,11 @@ void Mesh::Draw(Shader& shader) {
 		shader.addUniform1i(("material." + name + number).c_str(), i);
 		glBindTexture(GL_TEXTURE_2D, textures[i].id);
 	}
+
+	shader.addUniform3f("material.ambient", ambient.r, ambient.g, ambient.b);
+	shader.addUniform3f("material.diffuse", diffuse.r, diffuse.g, diffuse.b);
+	shader.addUniform3f("material.specular", specular.r, specular.g, specular.b);
+
 	glActiveTexture(GL_TEXTURE0);
 
 	// draw mesh

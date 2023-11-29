@@ -39,25 +39,24 @@ int main(void)
         std::cout << "GLEW Error" << std::endl;
 
     std::cout << glGetString(GL_VERSION) << std::endl;
-   
-    stbi_set_flip_vertically_on_load(true);
-
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS); //if z value is less (closer to us), pass the depth test.
-    glStencilFunc(GL_NOTEQUAL, 1, 0xFF); //mask the stencil buffer to all 1's, set default all fragments fail stencil.
-    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE); //if failed stencil or depth, keep the value inside stencil buffer. If passed both, replace value with 1
 
     // create shader
     Shader ourShader = Shader::Shader("vertex.shader", "frag.shader");
-    Shader borderShader = Shader::Shader("shaderBorderColorVertex.shader", "shaderBorderColor.shader");
     Shader lightShader = Shader::Shader("vertexLight.shader", "fragLight.shader");
     Shader framebufferShader = Shader::Shader("framebuffervertex.shader", "framebufferfrag.shader");
+    Shader skyboxShader = Shader::Shader("skyboxVertex.shader", "skyboxFrag.shader");
+
+    glUseProgram(ourShader.createShaderProgram());
+    skyboxShader.addUniform1i("skybox", 0);
+
+    glUseProgram(skyboxShader.createShaderProgram());
+    skyboxShader.addUniform1i("skyboxTexture", 0);
 
     glUseProgram(framebufferShader.createShaderProgram());
     framebufferShader.addUniform1i("screenTexture", 0);
 
     std::string workingDir = std::filesystem::current_path().generic_string();
-    Model ourModel(workingDir + "/" + "resources/model/backpack/backpack.obj");
+    Model ourModel(workingDir + "/" + "resources/model/chair/chair.obj");
 
     std::string cubeTexturePath = workingDir + "/" + "resources/redstone_lamp_on.png";
     Cube lightCube = Cube::Cube(cubeTexturePath);
@@ -77,6 +76,47 @@ int main(void)
 
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColorBuffer, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
+
+    // attach skybox texture
+    unsigned int skyboxTex;
+    glGenTextures(1, &skyboxTex);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTex);
+    int width, height, nrChannels;
+    for (unsigned int i = 0; i < faces.size(); i++)
+    {
+        unsigned char* data = stbi_load(("resources/skybox/" + faces[i]).c_str(), &width, &height, &nrChannels, 0);
+        if (data)
+        {
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+                0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
+            );
+            stbi_image_free(data);
+        }
+        else
+        {
+            std::cout << "Cubemap tex failed to load at path: " << faces[i] << std::endl;
+            stbi_image_free(data);
+        }
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    // create skybox vao
+    unsigned int skyboxVAO, skyboxVBO;
+    glGenVertexArrays(1, &skyboxVAO);
+    glGenBuffers(1, &skyboxVBO);
+
+    glBindVertexArray(skyboxVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), skyboxVertices, GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+    glBindVertexArray(0);
 
     // attach depth and stencil buffers with rbo
     unsigned int rbo;
@@ -129,26 +169,26 @@ int main(void)
         // render
         // ------   
 
-        glBindFramebuffer(GL_FRAMEBUFFER, fbo); 
-        camera.Yaw += 180.0f;
-        camera.ProcessMouseMovement(0, 0, false);
-        DrawScene(lightShader, ourShader, borderShader, lightCube, ourModel); //render rear view mirror onto framebuffer
+        glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // second pass
-        glBindFramebuffer(GL_FRAMEBUFFER, 0); // back to default
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glEnable(GL_DEPTH_TEST);
+        DrawScene(lightShader, ourShader, lightCube, ourModel); // render actual scene
 
-        camera.Yaw -= 180.0f;
-        camera.ProcessMouseMovement(0, 0, true); 
-        DrawScene(lightShader, ourShader, borderShader, lightCube, ourModel); // render actual scene
 
-        glUseProgram(framebufferShader.createShaderProgram());
-        glBindVertexArray(quadVAO);
-        glBindTexture(GL_TEXTURE_2D, texColorBuffer);
-        glDisable(GL_DEPTH_TEST);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        
+        // set depth function to less than or equal (all skybox depth vales are 1.0)
+        glDepthFunc(GL_LEQUAL);
+        glUseProgram(skyboxShader.createShaderProgram());
+
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        glm::mat4 view = glm::mat4(glm::mat3(camera.GetViewMatrix())); // remove camera translation from view matrix in skybox (we just want rotation/scale)
+        skyboxShader.addUniformMat4("view", view);
+        skyboxShader.addUniformMat4("projection", projection);
+
+        glBindVertexArray(skyboxVAO);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTex);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glDepthFunc(GL_LESS);
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
@@ -195,91 +235,59 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
     camera.ProcessMouseScroll(static_cast<float>(yoffset));
 }
 
-void DrawScene(Shader& lightShader, Shader& ourShader, Shader& borderShader, Cube &lightCube, Model &ourModel) {
-
-
-    glEnable(GL_DEPTH_TEST);
-    glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
+void DrawScene(Shader& lightShader, Shader& ourShader, Cube &lightCube, Model &ourModel) {
     glUseProgram(lightShader.createShaderProgram());
     glm::mat4 model = glm::mat4(1.0f);
     glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
     glm::mat4 view = camera.GetViewMatrix();
 
     glm::vec3 lightMove = glm::vec3(sin(glfwGetTime()), 0, 0);
-    glm::vec3 lightPos1 = glm::vec3(cubePositions[0].x + sin(glfwGetTime()) / 4, cubePositions[0].y, cubePositions[0].z);
+
 
     lightShader.addUniformMat4("view", view);
     lightShader.addUniformMat4("projection", projection);
-    lightShader.addUniform3f("lightColor", 1.0f, 0.0f, 0.0f);
 
-    for (glm::vec3 vec : cubePositions) {
+    /*
+    for (glm::vec3 vec : pointLightPositions) {
         model = glm::mat4(1.0f);
-        vec += lightMove;
+        model = glm::scale(model, glm::vec3(0.5f));
 
-        model = glm::translate(model, vec);
-        model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+        model = glm::translate(model, vec + lightMove);
         lightShader.addUniformMat4("model", model);
         lightCube.Draw(lightShader);
     }
+    */
 
     // don't forget to enable shader before setting uniforms
     glUseProgram(ourShader.createShaderProgram());
-
-    // global light
     ourShader.addUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
-    ourShader.addUniform3f("pointLight.ambient", 0.1f, 0.1f, 0.1f);
-    ourShader.addUniform3f("pointLight.diffuse", 0.7f, 0.7f, 0.7f);
-    ourShader.addUniform3f("pointLight.specular", 1.0f, 1.0f, 1.0f);
-    ourShader.addUniform3f("pointLight.position", lightPos1.x, lightPos1.y, lightPos1.z);
+
+    for (int i = 0; i < 4; i++) {
+        std::string num = std::to_string(i);
+
+        ourShader.addUniform3f("pointLights[" + num + "].ambient", 0.1f, 0.1f, 0.1f);
+        ourShader.addUniform3f("pointLights[" + num + "].diffuse", 0.8f, 0.8f, 0.8f);
+        ourShader.addUniform3f("pointLights[" + num + "].specular", 1.0f, 1.0f, 1.0f);
+        ourShader.addUniform3f("pointLights[" + num + "].position", pointLightPositions[i].x + lightMove.x, pointLightPositions[i].y + lightMove.y, pointLightPositions[i].z + lightMove.z);
+        ourShader.addUniform1f("pointLights[" + num + "].constant", 1.0f);
+        ourShader.addUniform1f("pointLights[" + num + "].linear", 0.09f);
+        ourShader.addUniform1f("pointLights[" + num + "].quadratic", 0.032f);
+    }
 
     // view/projection transformations
     model = glm::mat4(1.0f);
     ourShader.addUniformMat4("projection", projection);
     ourShader.addUniformMat4("view", view);
 
-    // enable stencil writes and set all writes to set 1 in the stencil buffer for the following rendered objects
-    glEnable(GL_STENCIL_TEST);
-    glStencilFunc(GL_ALWAYS, 1, 0xFF);
-    glStencilMask(0xFF); // enable writing to the stencil buffer
-
     // render the loaded model
-    model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-    model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
-    ourShader.addUniformMat4("model", model);
-    ourModel.Draw(ourShader);
-
-    model = glm::translate(model, glm::vec3(2.0f, 0.0f, 3.0f));
-    model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-    ourShader.addUniformMat4("model", model);
-    ourModel.Draw(ourShader);
-
-
-    // disable writes, and only pass stencil test where stencil test is NOT 1. 
-    // note - since depth test is disabled, the only condition checked is whether the current fragment's stencil buffer value is NOT_EQUAL to 1. If it is not 1, the new fragment is drawn. If it is 1, the new fragment is discarded.
-    // we do not need to disable writes to the stencil buffer, even though in the areas where the stencil test passes, the buffer's values are written to the ref value, 1, the buffer is cleared in the next frame.
-    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-    glStencilMask(0x00);
-
-    glUseProgram(borderShader.createShaderProgram());
-
-    model = glm::mat4(1.0f);
-    borderShader.addUniformMat4("projection", projection);
-    borderShader.addUniformMat4("view", view);
-
-    model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-    borderShader.addUniformMat4("model", model);
-    ourModel.Draw(borderShader);
-
-    model = glm::translate(model, glm::vec3(2.0f, 0.0f, 3.0f));
-    model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-    borderShader.addUniformMat4("model", model);
-    ourModel.Draw(borderShader);
-
-    // re-enable writes, set stencil to always pass and re-enable depth test
-    glStencilMask(0xFF);
-    glStencilFunc(GL_ALWAYS, 1, 0xFF);
-    glEnable(GL_DEPTH_TEST);
+    for (int i = 0; i < 2; i++) {
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, cubePositions[i]);
+        model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(0.01f, 0.01f, 0.01f));
+        ourShader.addUniformMat4("model", model);
+        ourModel.Draw(ourShader);
+    }
 
 }
+

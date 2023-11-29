@@ -10,8 +10,6 @@ struct Texture {
 class TextureLoader {
 public:
 	static Texture loadTexture(const char* path, const std::string& directory, std::string typeName);
-	static int getTexturesSize();
-	static Texture getTexture(const char* path);
 private:
 	static std::map<const std::string, Texture> loadedTextures;
 	static unsigned int TextureFromFile(const char* path, const std::string& directory, bool gamma);

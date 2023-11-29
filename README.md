@@ -4,6 +4,7 @@ Goal is to slowly build a 3D renderer, with learned concepts. Current / planned 
 - Model Loading/Rendering
 - Model Material Rendering (Complete w/ diffuse, specular and height (ambient) maps)
 - Basic 3d Camera System
+- Skyboxes, Reflectivity
 - Basic Shape Rendering (Cube, Plane (TODO), Sphere (TODO))
 - Texture Loading System and Rendering
 - Lighting (Point lighting, Spotlight (TODO), Directional Light)
@@ -14,7 +15,6 @@ Goal is to slowly build a 3D renderer, with learned concepts. Current / planned 
 - Stencil buffer system (TODO)
 - More camera options (Orthographic, Isometric etc...) (TODO)
 - Advanced Lighting (HDR, Bloom, etc...) (TODO)
-- Skyboxes, Reflectivity (TODO)
 - Blending support (for transparent and semi-transparent textures) (TODO)
 - AND MORE!
 
@@ -33,3 +33,6 @@ Lighting maps demo:
 Model loading, lighting, stencil buffer demo:
 
 ![](model_load.gif)
+
+Reflection, skybox
+![](reflect_skybox.gif)
