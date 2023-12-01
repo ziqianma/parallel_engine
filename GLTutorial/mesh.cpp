@@ -1,7 +1,7 @@
 #include "mesh.h"
 
 // Constrctor intializes mesh data along with VAO, VBO and EBO
-Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular) {
+Mesh::Mesh(const std::vector<Vertex> &vertices, const std::vector<unsigned int> &indices, const std::vector<Texture> &textures, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular) {
 	this->vertices = vertices;
 	this->indices = indices;
 	this->textures = textures;
@@ -10,6 +10,52 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std:
 	this->diffuse = diffuse;
 	this->specular = specular;
 	setupMesh();
+}
+
+Mesh::Mesh(const std::vector<float> &positions, const std::vector<float> &normals, const std::vector<float> &textureCoords, std::vector<unsigned int>& indices, std::vector<Texture>& textures, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular) {
+	this->indices = indices;
+	this->textures = textures;
+
+	this->ambient = ambient;
+	this->diffuse = diffuse;
+	this->specular = specular;
+
+	setupMeshWithSubBuffers(positions, normals, textureCoords);
+}
+
+void Mesh::setupMeshWithSubBuffers(const std::vector<float> &positions, const std::vector<float>& normals, const std::vector<float>& textureCoords) {
+	glGenVertexArrays(1, &VAO);
+	glGenBuffers(1, &VBO);
+	glGenBuffers(1, &EBO);
+
+	glBindVertexArray(VAO);
+
+	GLsizeiptr positionsSize = positions.size() * sizeof(float);
+	GLsizeiptr normalsSize = normals.size() * sizeof(float);
+	GLsizeiptr texCoordsSize = textureCoords.size() * sizeof(float);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+	glBufferData(GL_ARRAY_BUFFER, positionsSize + normalsSize + texCoordsSize, NULL, GL_STATIC_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, positionsSize, &positions[0]);
+	glBufferSubData(GL_ARRAY_BUFFER, positionsSize, normalsSize, &normals[0]);
+	glBufferSubData(GL_ARRAY_BUFFER, positionsSize + normalsSize, texCoordsSize, &textureCoords[0]);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+
+	// bind vertex attribs
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
+
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)positionsSize);
+
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)(positionsSize + normalsSize));
+
+	glBindVertexArray(0);
+
 }
 
 void Mesh::setupMesh() {
@@ -24,7 +70,7 @@ void Mesh::setupMesh() {
 	// Bind VBO/EBO to current VAO
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
-				
+	
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
 

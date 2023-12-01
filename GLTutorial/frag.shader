@@ -38,10 +38,11 @@ void main()
 {
     vec3 norm = normalize(Normal);
     vec3 viewDir = normalize(viewPos - FragPos); 
-    
-    vec3 reflected = reflect(viewDir, norm);
+    vec3 result = vec3(0.0);
 
-    vec3 result = texture(skybox, reflected).rgb;
+    for (int i = 0; i < 4; i++) {
+        result += CalcPointLight(pointLights[i], norm, FragPos, viewDir);
+    }
 
     FragColor = vec4(result, 1.0);
 }

@@ -30,7 +30,7 @@ int main(void)
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
-
+        
     // tell GLFW to capture our mouse
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         
@@ -61,21 +61,6 @@ int main(void)
     std::string cubeTexturePath = workingDir + "/" + "resources/redstone_lamp_on.png";
     Cube lightCube = Cube::Cube(cubeTexturePath);
 
-    // framebufffer
-    unsigned int fbo;   
-    glGenFramebuffers(1, &fbo);
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-
-    // attach color reference to framebuffer
-    unsigned int texColorBuffer;
-    glGenTextures(1, &texColorBuffer);
-    glBindTexture(GL_TEXTURE_2D, texColorBuffer);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT / 2, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColorBuffer, 0);
-    glBindTexture(GL_TEXTURE_2D, 0);
 
     // attach skybox texture
     unsigned int skyboxTex;
@@ -118,35 +103,6 @@ int main(void)
 
     glBindVertexArray(0);
 
-    // attach depth and stencil buffers with rbo
-    unsigned int rbo;
-    glGenRenderbuffers(1, &rbo);
-    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT / 2);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
-    glBindRenderbuffer(GL_RENDERBUFFER, 0);
-
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-        std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
-    glBindFramebuffer(GL_FRAMEBUFFER, 0); // detach framebuffer
-
-    // framebuffer quad
-    unsigned int quadVAO, quadVBO;
-    glGenVertexArrays(1, &quadVAO);
-    glGenBuffers(1, &quadVBO);
-
-    glBindVertexArray(quadVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(rearMirror), rearMirror, GL_STATIC_DRAW);
-
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
-
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-
-    glBindVertexArray(0);
-
     /* Loop until the user closes the window */ 
     while (!glfwWindowShouldClose(window))  
     {   
@@ -174,7 +130,6 @@ int main(void)
 
         glEnable(GL_DEPTH_TEST);
         DrawScene(lightShader, ourShader, lightCube, ourModel); // render actual scene
-
 
         // set depth function to less than or equal (all skybox depth vales are 1.0)
         glDepthFunc(GL_LEQUAL);
@@ -247,7 +202,7 @@ void DrawScene(Shader& lightShader, Shader& ourShader, Cube &lightCube, Model &o
     lightShader.addUniformMat4("view", view);
     lightShader.addUniformMat4("projection", projection);
 
-    /*
+    
     for (glm::vec3 vec : pointLightPositions) {
         model = glm::mat4(1.0f);
         model = glm::scale(model, glm::vec3(0.5f));
@@ -256,7 +211,7 @@ void DrawScene(Shader& lightShader, Shader& ourShader, Cube &lightCube, Model &o
         lightShader.addUniformMat4("model", model);
         lightCube.Draw(lightShader);
     }
-    */
+    
 
     // don't forget to enable shader before setting uniforms
     glUseProgram(ourShader.createShaderProgram());
