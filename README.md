@@ -19,7 +19,7 @@ Currently use this repository for the implementation of learned concepts and fun
 - Blending support (for transparent and semi-transparent textures) (TODO)
 - AND MORE!
 
-<br />Work Showcases:<br />
+## Work Showcases:
 <div>
 <img src="Animation6.gif" width="250" height="250"/>
 Cube screensaver (Beginning with 3d graphics)
