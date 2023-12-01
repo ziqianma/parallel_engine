@@ -18,21 +18,26 @@ Goal is to slowly build a 3D renderer, with learned concepts. Current / planned 
 - Blending support (for transparent and semi-transparent textures) (TODO)
 - AND MORE!
 
-3d DVD cube screensaver:
+<br />Work Showcases:<br />
+<div>
+<img src="Animation6.gif" width="250" height="250"/>
+Cube screensaver (Beginning with 3d graphics)
+</div>
 
-![](Animation6.gif)
+<div>
+<img src="spec_light_demo.gif" width="250" height="200"/>
+Phong lighting demo (Lighting)
+</div>
 
-Phong Lighting demo:
-
-![](spec_light_demo.gif)
-
-Lighting maps demo:
-
-![](lighting_maps.gif)
-
-Model loading, lighting, stencil buffer demo:
-
-![](model_load.gif)
-
-Reflection, skybox
-![](reflect_skybox.gif)
+<div>
+<img src="lighting_maps.gif" width="250" height="200"/>
+Lighting maps (diffuse, specular textures)
+</div>
+<div>
+<img src="model_load.gif" width="250" height="200"/>
+Model loading, rendering and stencil buffer showcase
+</div>
+<div>
+<img src="reflect_skybox.gif" width="250" height="200"/>
+Skybox (cubemap texture) + environment mapping demo (environment reflection)
+</div>
