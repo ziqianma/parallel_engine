@@ -1,6 +1,7 @@
-# opengl_fun
-Repository for whatever opengl stuff I'm currently working on.
-Goal is to slowly build a 3D renderer, with learned concepts. Current / planned features include:
+# OpenGL Fun!
+## Goal is to slowly build a 3D renderer, with learned concepts. 
+Currently use this repository for the implementation of learned concepts and fun graphics side projects.<br />
+### Current / planned features include:
 - Model Loading/Rendering (Batched vertex attributes)
 - Model Material Rendering (Complete w/ diffuse, specular and height (ambient) maps)
 - Basic 3d Camera System
