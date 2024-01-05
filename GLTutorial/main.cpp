@@ -131,7 +131,7 @@ int main(void)
 
         glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+        
         glEnable(GL_DEPTH_TEST);
         DrawScene(lightShader, ourShader, lightCube, ourModel); // render actual scene
 
@@ -148,6 +148,7 @@ int main(void)
         glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTex);
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glDepthFunc(GL_LESS);
+        
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
@@ -200,8 +201,6 @@ void DrawScene(Shader& lightShader, Shader& ourShader, Cube& lightCube, Model& o
     glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
     glm::mat4 view = camera.GetViewMatrix();
 
-    glm::vec3 lightMove = glm::vec3(sin(glfwGetTime()), 0, 0);
-
     lightShader.addUniformMat4("view", view);
     lightShader.addUniformMat4("projection", projection);
 
@@ -210,7 +209,7 @@ void DrawScene(Shader& lightShader, Shader& ourShader, Cube& lightCube, Model& o
         model = glm::mat4(1.0f);
         model = glm::scale(model, glm::vec3(0.5f));
 
-        model = glm::translate(model, vec + lightMove);
+        model = glm::translate(model, vec);
         lightShader.addUniformMat4("model", model);
         lightCube.Draw(lightShader);
     }
@@ -226,7 +225,7 @@ void DrawScene(Shader& lightShader, Shader& ourShader, Cube& lightCube, Model& o
         ourShader.addUniform3f("pointLights[" + num + "].ambient", 0.1f, 0.1f, 0.1f);
         ourShader.addUniform3f("pointLights[" + num + "].diffuse", 0.8f, 0.8f, 0.8f);
         ourShader.addUniform3f("pointLights[" + num + "].specular", 1.0f, 1.0f, 1.0f);
-        ourShader.addUniform3f("pointLights[" + num + "].position", pointLightPositions[i].x + lightMove.x, pointLightPositions[i].y + lightMove.y, pointLightPositions[i].z + lightMove.z);
+        ourShader.addUniform3f("pointLights[" + num + "].position", pointLightPositions[i].x, pointLightPositions[i].y, pointLightPositions[i].z);
         ourShader.addUniform1f("pointLights[" + num + "].constant", 1.0f);
         ourShader.addUniform1f("pointLights[" + num + "].linear", 0.09f);
         ourShader.addUniform1f("pointLights[" + num + "].quadratic", 0.032f);

@@ -1,7 +1,7 @@
 #include "model.h"
 
 void Model::Draw(const Shader& shader) {
-	for (Mesh m : meshes) {
+	for (Mesh &m : meshes) {
 		m.Draw(shader);
 	}
 }
@@ -24,9 +24,12 @@ void Model::processNode(aiNode* node, const aiScene* scene) {
 	// scene->mMeshes contains meshes which make up the entire model.
 	// We loop through all references to meshes within the node (indices of meshes inside the scene)
 	// Then translate those aiMesh* to our native Mesh type (using processMesh) and add to our mesh list.
+
+	meshes.reserve(scene->mNumMeshes);
+
 	for (unsigned int i = 0; i < node->mNumMeshes; i++) {
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-		meshes.push_back(processMesh(mesh, scene));
+		processMesh(mesh, scene);
 	}
 
 	// Now we recursively process all children of the current node, making sure to add all meshes of the children to our list
@@ -35,7 +38,7 @@ void Model::processNode(aiNode* node, const aiScene* scene) {
 	}		
 }
 
-Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
+void Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 	//std::vector<Vertex> vertices;
 
 	std::vector<Vertex> vertices;
@@ -94,7 +97,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 		material->Get(AI_MATKEY_COLOR_SPECULAR, specular);
 	}
 
-	return Mesh(vertices, indices, textures, glm::vec3(ambient.r, ambient.g, ambient.b), glm::vec3(diffuse.r, diffuse.g, diffuse.b), glm::vec3(specular.r, specular.g, specular.b));
+	meshes.emplace_back(vertices, indices, textures, glm::vec3(ambient.r, ambient.g, ambient.b), glm::vec3(diffuse.r, diffuse.g, diffuse.b), glm::vec3(specular.r, specular.g, specular.b));
 }
 
 std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName) {

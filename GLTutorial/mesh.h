@@ -25,6 +25,19 @@ public:
 
 	Mesh(const std::vector<Vertex> &vertices, const std::vector<unsigned int> &indices, const std::vector<Texture> &textures, glm::vec3 ambient = glm::vec3(0.05f), glm::vec3 diffuse = glm::vec3(0.7f), glm::vec3 specular = glm::vec3(1.0f));
 	void Draw(const Shader& shader);
+
+	Mesh(const Mesh& other) {
+		std::cout << "copy" << std::endl;
+		vertices = other.vertices;
+		indices = other.indices;
+		textures = other.textures;
+		ambient = other.ambient;
+		diffuse = other.diffuse;
+		specular = other.specular;
+		VAO = other.VAO;
+		VBO = other.VBO;
+		EBO = other.EBO;
+	}
 private:
 	unsigned int VAO, VBO, EBO;
 	void setupMesh();
