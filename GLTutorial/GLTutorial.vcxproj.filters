@@ -100,5 +100,8 @@
     <ClInclude Include="textures.h">
       <Filter>Source Files\src</Filter>
     </ClInclude>
+    <ClInclude Include="scenenode.h">
+      <Filter>Source Files\src</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

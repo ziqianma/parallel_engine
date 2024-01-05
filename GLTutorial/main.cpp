@@ -10,7 +10,7 @@ bool firstMouse = true;
 float dt = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
 
-int main(void)  
+int main(void)
 {
     /* Initialize the library */
     if (!glfwInit())
@@ -25,20 +25,23 @@ int main(void)
         return -1;
     }
 
+    // tell stb_image.h to flip loaded texture's on the y-axis (before loading model).
+    stbi_set_flip_vertically_on_load(true);
+
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
-        
+
     // tell GLFW to capture our mouse
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        
-    
+
     if (glewInit() != GLEW_OK)
         std::cout << "GLEW Error" << std::endl;
 
     std::cout << glGetString(GL_VERSION) << std::endl;
+
 
     // create shader
     Shader ourShader = Shader::Shader("vertex.shader", "frag.shader");
@@ -56,12 +59,12 @@ int main(void)
     framebufferShader.addUniform1i("screenTexture", 0);
 
     std::string workingDir = std::filesystem::current_path().generic_string();
-    Model ourModel(workingDir + "/" + "resources/model/chair/chair.obj");
+    Model ourModel(workingDir + "/" + "resources/model/backpack/backpack.obj");
 
     std::string cubeTexturePath = workingDir + "/" + "resources/redstone_lamp_on.png";
     Cube lightCube = Cube::Cube(cubeTexturePath);
 
-
+    stbi_set_flip_vertically_on_load(false);
     // attach skybox texture
     unsigned int skyboxTex;
     glGenTextures(1, &skyboxTex);
@@ -88,6 +91,7 @@ int main(void)
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    stbi_set_flip_vertically_on_load(true);
 
     // create skybox vao
     unsigned int skyboxVAO, skyboxVBO;
@@ -103,9 +107,9 @@ int main(void)
 
     glBindVertexArray(0);
 
-    /* Loop until the user closes the window */ 
-    while (!glfwWindowShouldClose(window))  
-    {   
+    /* Loop until the user closes the window */
+    while (!glfwWindowShouldClose(window))
+    {
         float currentFrame = static_cast<float>(glfwGetTime());
         dt = currentFrame - lastFrame;
         lastFrame = currentFrame;
@@ -113,7 +117,7 @@ int main(void)
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
 
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)   
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
             camera.ProcessKeyboard(FORWARD, dt);
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
             camera.ProcessKeyboard(BACKWARD, dt);
@@ -148,7 +152,7 @@ int main(void)
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
 
-        /* Poll for and process events */   
+        /* Poll for and process events */
         glfwPollEvents();
     }
 
@@ -190,7 +194,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
     camera.ProcessMouseScroll(static_cast<float>(yoffset));
 }
 
-void DrawScene(Shader& lightShader, Shader& ourShader, Cube &lightCube, Model &ourModel) {
+void DrawScene(Shader& lightShader, Shader& ourShader, Cube& lightCube, Model& ourModel) {
     glUseProgram(lightShader.createShaderProgram());
     glm::mat4 model = glm::mat4(1.0f);
     glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
@@ -198,11 +202,10 @@ void DrawScene(Shader& lightShader, Shader& ourShader, Cube &lightCube, Model &o
 
     glm::vec3 lightMove = glm::vec3(sin(glfwGetTime()), 0, 0);
 
-
     lightShader.addUniformMat4("view", view);
     lightShader.addUniformMat4("projection", projection);
 
-    
+
     for (glm::vec3 vec : pointLightPositions) {
         model = glm::mat4(1.0f);
         model = glm::scale(model, glm::vec3(0.5f));
@@ -211,7 +214,7 @@ void DrawScene(Shader& lightShader, Shader& ourShader, Cube &lightCube, Model &o
         lightShader.addUniformMat4("model", model);
         lightCube.Draw(lightShader);
     }
-    
+
 
     // don't forget to enable shader before setting uniforms
     glUseProgram(ourShader.createShaderProgram());
@@ -234,15 +237,11 @@ void DrawScene(Shader& lightShader, Shader& ourShader, Cube &lightCube, Model &o
     ourShader.addUniformMat4("projection", projection);
     ourShader.addUniformMat4("view", view);
 
-    // render the loaded model
-    for (int i = 0; i < 2; i++) {
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, cubePositions[i]);
-        model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(0.01f, 0.01f, 0.01f));
-        ourShader.addUniformMat4("model", model);
-        ourModel.Draw(ourShader);
-    }
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0f,0.0f,0.0f));
+    model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+    ourShader.addUniformMat4("model", model);
+    ourModel.Draw(ourShader);
+    
 
 }
-

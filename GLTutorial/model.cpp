@@ -1,12 +1,12 @@
 #include "model.h"
 
-void Model::Draw(Shader& shader) {
+void Model::Draw(const Shader& shader) {
 	for (Mesh m : meshes) {
 		m.Draw(shader);
 	}
 }
 
-void Model::loadModel(std::string path) {
+void Model::loadModel(const std::string& path) {
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);		
 
@@ -38,51 +38,32 @@ void Model::processNode(aiNode* node, const aiScene* scene) {
 Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 	//std::vector<Vertex> vertices;
 
-	std::vector<float> positions;
-	std::vector<float> normals;
-	std::vector<float> textureCoords;
+	std::vector<Vertex> vertices;
+	vertices.reserve(mesh->mNumVertices);
 
 	std::vector<unsigned int> indices;
 	std::vector<Texture> textures;
 
 	// Translate all vertex data
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
-		/*
-		Vertex v;
-		glm::vec3 temp;
-		temp.x = mesh->mVertices[i].x;
-		temp.y = mesh->mVertices[i].y;
-		temp.z = mesh->mVertices[i].z;
-		v.position = temp;
-		*/
+		
+		glm::vec3 position;
+		position.x = mesh->mVertices[i].x;
+		position.y = mesh->mVertices[i].y;
+		position.z = mesh->mVertices[i].z;
 
-		positions.push_back(mesh->mVertices[i].x);
-		positions.push_back(mesh->mVertices[i].y);
-		positions.push_back(mesh->mVertices[i].z);
-
-		/*
-		temp.x = mesh->mNormals[i].x;
-		temp.y = mesh->mNormals[i].y;
-		temp.z = mesh->mNormals[i].z;
-		v.normal = temp;
-		*/
-
-		normals.push_back(mesh->mNormals[i].x);
-		normals.push_back(mesh->mNormals[i].y);
-		normals.push_back(mesh->mNormals[i].z);
-
+		glm::vec3 normal;
+		normal.x = mesh->mNormals[i].x;
+		normal.y = mesh->mNormals[i].y;
+		normal.z = mesh->mNormals[i].z;
+		
 		glm::vec2 texCoord = glm::vec2(0.0f, 0.0f);
 		if (mesh->mTextureCoords[0]) {
 			texCoord.x = mesh->mTextureCoords[0][i].x;
 			texCoord.y = mesh->mTextureCoords[0][i].y;
 		}
-		/*
-		v.texCoord = texCoord;
-		vertices.push_back(v);
-		*/
 
-		textureCoords.push_back(texCoord.x);
-		textureCoords.push_back(texCoord.y);
+		vertices.emplace_back(position, normal, texCoord);
 	}
 
 	// Translate index data
@@ -113,7 +94,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 		material->Get(AI_MATKEY_COLOR_SPECULAR, specular);
 	}
 
-	return Mesh(positions, normals, textureCoords, indices, textures, glm::vec3(ambient.r, ambient.g, ambient.b), glm::vec3(diffuse.r, diffuse.g, diffuse.b), glm::vec3(specular.r, specular.g, specular.b));
+	return Mesh(vertices, indices, textures, glm::vec3(ambient.r, ambient.g, ambient.b), glm::vec3(diffuse.r, diffuse.g, diffuse.b), glm::vec3(specular.r, specular.g, specular.b));
 }
 
 std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName) {

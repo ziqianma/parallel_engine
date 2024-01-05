@@ -33,11 +33,11 @@ uniform vec3 viewPos;
 uniform samplerCube skybox;
 
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
-    
+
 void main()
 {
     vec3 norm = normalize(Normal);
-    vec3 viewDir = normalize(viewPos - FragPos); 
+    vec3 viewDir = normalize(viewPos - FragPos);
     vec3 result = vec3(0.0);
 
     for (int i = 0; i < 4; i++) {
@@ -64,7 +64,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
     vec3 diffuse = light.diffuse * material.diffuse * diff * vec3(texture(material.texture_diffuse1, TexCoords));
     vec3 specular = light.specular * material.specular * spec * vec3(texture(material.texture_specular1, TexCoords));
 
-    ambient *= attenuation; 
+    ambient *= attenuation;
     diffuse *= attenuation;
     specular *= attenuation;
 

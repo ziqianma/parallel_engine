@@ -5,12 +5,12 @@
 #include "model.h"
 #include "camera.h"
 #include "cube.h"  
-
 #include <filesystem>
+
+void DrawScene(Shader& lightShader, Shader& ourShader, Cube& lightCube, Model& ourModel);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-void DrawScene(Shader& lightShader, Shader& ourShader, Cube& lightCube, Model& ourModel);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset); 
 
 glm::vec3 pointLightPositions[] = {
     glm::vec3(0.7f,  0.2f,  10.0f),

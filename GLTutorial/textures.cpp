@@ -21,7 +21,6 @@ Texture TextureLoader::loadTexture(const char* path, const std::string& director
 	std::string textureKey = std::string(path);
 	loadedTextures[textureKey] = texture;
 	
-
 	return texture;
 }
 
