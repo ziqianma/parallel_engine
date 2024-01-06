@@ -7,10 +7,10 @@
 class Cube {
 public:
     Cube();
-    Cube(std::string& texturePath);
+    Cube(const Shader& shader, std::string& texturePath);
     void Draw(Shader &shader);
 private:
-    Texture cubeTexture;
+    unsigned int cubeTexture;
     unsigned int VAO, VBO;
     float cubeVertices[180] = {
         // Back face

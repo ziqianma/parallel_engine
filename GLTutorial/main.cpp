@@ -42,27 +42,19 @@ int main(void)
 
     std::cout << glGetString(GL_VERSION) << std::endl;
 
-
     // create shader
     Shader ourShader = Shader::Shader("vertex.shader", "frag.shader");
     Shader lightShader = Shader::Shader("vertexLight.shader", "fragLight.shader");
-    Shader framebufferShader = Shader::Shader("framebuffervertex.shader", "framebufferfrag.shader");
     Shader skyboxShader = Shader::Shader("skyboxVertex.shader", "skyboxFrag.shader");
 
-    glUseProgram(ourShader.createShaderProgram());
-    skyboxShader.addUniform1i("skybox", 0);
-
-    glUseProgram(skyboxShader.createShaderProgram());
-    skyboxShader.addUniform1i("skyboxTexture", 0);
-
-    glUseProgram(framebufferShader.createShaderProgram());
-    framebufferShader.addUniform1i("screenTexture", 0);
-
     std::string workingDir = std::filesystem::current_path().generic_string();
-    Model ourModel(workingDir + "/" + "resources/model/backpack/backpack.obj");
-
+    Model ourModel(ourShader, workingDir + "/" + "resources/model/backpack/backpack.obj");
     std::string cubeTexturePath = workingDir + "/" + "resources/redstone_lamp_on.png";
-    Cube lightCube = Cube::Cube(cubeTexturePath);
+    Cube lightCube = Cube::Cube(lightShader, cubeTexturePath);
+
+    skyboxShader.bind();
+    skyboxShader.addUniform1i("skybox", 0);
+    skyboxShader.addUniform1i("skyboxTexture", 0);
 
     stbi_set_flip_vertically_on_load(false);
     // attach skybox texture
@@ -106,6 +98,7 @@ int main(void)
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
     glBindVertexArray(0);
+    skyboxShader.unbind();
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
@@ -137,8 +130,8 @@ int main(void)
 
         // set depth function to less than or equal (all skybox depth vales are 1.0)
         glDepthFunc(GL_LEQUAL);
-        glUseProgram(skyboxShader.createShaderProgram());
 
+        skyboxShader.bind();
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         glm::mat4 view = glm::mat4(glm::mat3(camera.GetViewMatrix())); // remove camera translation from view matrix in skybox (we just want rotation/scale)
         skyboxShader.addUniformMat4("view", view);
@@ -148,8 +141,8 @@ int main(void)
         glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTex);
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glDepthFunc(GL_LESS);
+        skyboxShader.unbind();
         
-
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
 
@@ -196,7 +189,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 }
 
 void DrawScene(Shader& lightShader, Shader& ourShader, Cube& lightCube, Model& ourModel) {
-    glUseProgram(lightShader.createShaderProgram());
+    lightShader.bind();
     glm::mat4 model = glm::mat4(1.0f);
     glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
     glm::mat4 view = camera.GetViewMatrix();
@@ -213,10 +206,10 @@ void DrawScene(Shader& lightShader, Shader& ourShader, Cube& lightCube, Model& o
         lightShader.addUniformMat4("model", model);
         lightCube.Draw(lightShader);
     }
-
+    lightShader.unbind();
 
     // don't forget to enable shader before setting uniforms
-    glUseProgram(ourShader.createShaderProgram());
+    ourShader.bind();
     ourShader.addUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
 
     for (int i = 0; i < 4; i++) {
@@ -241,6 +234,5 @@ void DrawScene(Shader& lightShader, Shader& ourShader, Cube& lightCube, Model& o
     model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
     ourShader.addUniformMat4("model", model);
     ourModel.Draw(ourShader);
-    
-
+    ourShader.unbind();
 }

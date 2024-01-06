@@ -1,14 +1,15 @@
 #include "mesh.h"
 
 // Constrctor intializes mesh data along with VAO, VBO and EBO
-Mesh::Mesh(const std::vector<Vertex> &vertices, const std::vector<unsigned int> &indices, const std::vector<Texture> &textures, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular) {
+Mesh::Mesh(const Shader& shader, const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<Texture>& textures, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular) {
 	this->vertices = vertices;
 	this->indices = indices;
 	this->textures = textures;
 
-	this->ambient = ambient;
-	this->diffuse = diffuse;
-	this->specular = specular;
+	shader.addUniform3f("material.ambient", ambient.r, ambient.g, ambient.b);
+	shader.addUniform3f("material.diffuse", diffuse.r, diffuse.g, diffuse.b);
+	shader.addUniform3f("material.specular", specular.r, specular.g, specular.b);
+	setupTextures(shader);
 	setupMesh();
 }
 
@@ -43,13 +44,12 @@ void Mesh::setupMesh() {
 	glBindVertexArray(0);	
 }
 
-void Mesh::Draw(const Shader& shader) {
+void Mesh::setupTextures(const Shader& shader) {
 	unsigned int diffuseNr = 1;
 	unsigned int specularNr = 1;
 	unsigned int heightNr = 1;
-	for (unsigned int i = 0; i < textures.size(); i++)
-	{
-		glActiveTexture(GL_TEXTURE0 + i); // activate proper texture unit before binding
+
+	for (int i = 0; i < textures.size(); i++) {
 		// retrieve texture number (the N in diffuse_textureN)
 		std::string number;
 		std::string name = textures[i].type;
@@ -61,12 +61,15 @@ void Mesh::Draw(const Shader& shader) {
 			number = std::to_string(heightNr++);
 
 		shader.addUniform1i(("material." + name + number).c_str(), i);
+	}
+}
+
+void Mesh::Draw(const Shader& shader) {
+	for (unsigned int i = 0; i < textures.size(); i++)
+	{
+		glActiveTexture(GL_TEXTURE0 + i); // activate proper texture unit before binding
 		glBindTexture(GL_TEXTURE_2D, textures[i].id);
 	}
-
-	shader.addUniform3f("material.ambient", ambient.r, ambient.g, ambient.b);
-	shader.addUniform3f("material.diffuse", diffuse.r, diffuse.g, diffuse.b);
-	shader.addUniform3f("material.specular", specular.r, specular.g, specular.b);
 	glActiveTexture(GL_TEXTURE0);
 
 	// draw mesh

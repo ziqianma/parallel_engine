@@ -27,6 +27,8 @@ Shader::Shader(const char* vertexShaderPath, const char* fragmentShaderPath) {
     {
         std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
     }
+
+    createShaderProgram();
 }
 
 void Shader::addUniform4f(const std::string& name, float x, float y, float z, float w) const {
@@ -59,7 +61,16 @@ void Shader::addUniformMat3(const std::string& name, glm::mat3 data) const {
     glUniformMatrix3fv(glGetUniformLocation(_shaderProgram, name.c_str()), 1, GL_FALSE, glm::value_ptr(data));
 }
 
-unsigned int Shader::createShaderProgram() {
+void Shader::bind() const {
+    glUseProgram(_shaderProgram);
+}
+
+void Shader::unbind() const {
+    glUseProgram(0);
+}
+
+
+void Shader::createShaderProgram() {
     int success;
     char infoLog[512];
 
@@ -103,5 +114,4 @@ unsigned int Shader::createShaderProgram() {
     glDeleteShader(fragmentShader);
 
     _shaderProgram = shaderProgram;
-    return shaderProgram;
 }

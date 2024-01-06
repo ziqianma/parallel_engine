@@ -12,16 +12,12 @@ Texture TextureLoader::loadTexture(const char* path, const std::string& director
 		}
 	}
 
-	Texture texture;
-
-	texture.id = TextureFromFile(path, directory, false);
-	texture.type = typeName;
-	texture.path = path;
+	int id = TextureFromFile(path, directory, false);
 
 	std::string textureKey = std::string(path);
-	loadedTextures[textureKey] = texture;
+	loadedTextures[textureKey] = Texture(id, typeName);
 	
-	return texture;
+	return Texture(id, typeName);
 }
 
 unsigned int TextureLoader::TextureFromFile(const char* path, const std::string& directory, bool gamma)

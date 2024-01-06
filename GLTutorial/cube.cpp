@@ -4,11 +4,16 @@ Cube::Cube() {
     setupCubeMesh();
 }
 
-Cube::Cube(std::string& texturePath) {
+Cube::Cube(const Shader& shader, std::string& texturePath) {
 	const std::string directory = texturePath.substr(0, texturePath.find_last_of("/"));
 	const std::string path = texturePath.substr( texturePath.find_last_of("/") + 1, texturePath.size());
 
-	cubeTexture = TextureLoader::loadTexture(path.c_str(), directory, "texture_diffuse");
+	Texture tex = TextureLoader::loadTexture(path.c_str(), directory, "texture_diffuse");
+    cubeTexture = tex.id;
+    shader.bind();
+    shader.addUniform1i(tex.type, cubeTexture);
+    shader.unbind();
+
     hasTexture = true;
     setupCubeMesh();
 }
@@ -33,9 +38,8 @@ void Cube::setupCubeMesh() {
 void Cube::Draw(Shader& shader) {
 
     if (hasTexture) {
-        glActiveTexture(GL_TEXTURE0 + cubeTexture.id);
-        shader.addUniform1i(cubeTexture.type, cubeTexture.id);
-        glBindTexture(GL_TEXTURE_2D, cubeTexture.id);
+        glActiveTexture(GL_TEXTURE0 + cubeTexture);
+        glBindTexture(GL_TEXTURE_2D, cubeTexture);
     }
 
     // draw mesh

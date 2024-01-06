@@ -83,25 +83,24 @@ void Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 
 	if (mesh->mMaterialIndex >= 0) {
 		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-		std::vector<Texture> diffuseMaterials = loadMaterialTextures(material, aiTextureType::aiTextureType_DIFFUSE, "texture_diffuse");
-		textures.insert(textures.end(), diffuseMaterials.begin(), diffuseMaterials.end());
+		int diffuseTexCount = material->GetTextureCount(aiTextureType::aiTextureType_DIFFUSE);
+		int specularTexCount = material->GetTextureCount(aiTextureType::aiTextureType_SPECULAR);
+		int normalTexCount = material->GetTextureCount(aiTextureType::aiTextureType_NORMALS);
+		textures.reserve(diffuseTexCount + specularTexCount + normalTexCount);
 
-		std::vector<Texture> specularMaterials = loadMaterialTextures(material, aiTextureType::aiTextureType_SPECULAR, "texture_specular");
-		textures.insert(textures.end(), specularMaterials.begin(), specularMaterials.end());
-
-		std::vector<Texture> bumpMaps = loadMaterialTextures(material, aiTextureType::aiTextureType_NORMALS, "texture_bump");
-		textures.insert(textures.end(), bumpMaps.begin(), bumpMaps.end());
+		loadMaterialTextures(textures, material, aiTextureType::aiTextureType_DIFFUSE, "texture_diffuse");
+		loadMaterialTextures(textures, material, aiTextureType::aiTextureType_SPECULAR, "texture_specular");
+		loadMaterialTextures(textures, material, aiTextureType::aiTextureType_NORMALS, "texture_bump");
 
 		material->Get(AI_MATKEY_COLOR_AMBIENT, ambient);
 		material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse);
 		material->Get(AI_MATKEY_COLOR_SPECULAR, specular);
 	}
 
-	meshes.emplace_back(vertices, indices, textures, glm::vec3(ambient.r, ambient.g, ambient.b), glm::vec3(diffuse.r, diffuse.g, diffuse.b), glm::vec3(specular.r, specular.g, specular.b));
+	meshes.emplace_back(m_Shader, vertices, indices, textures, glm::vec3(ambient.r, ambient.g, ambient.b), glm::vec3(diffuse.r, diffuse.g, diffuse.b), glm::vec3(specular.r, specular.g, specular.b));
 }
 
-std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName) {
-	std::vector<Texture> result;
+void Model::loadMaterialTextures(std::vector<Texture>& textures, aiMaterial* mat, aiTextureType type, const std::string& typeName) {
 
 	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++) {
 		aiString path;
@@ -110,8 +109,7 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType 
 		// will put all textures for the current model of type "typeName" into the TextureLoader
 		Texture texture = TextureLoader::loadTexture(path.C_Str(), directory, typeName);
 		// add previously loaded texture to result list so model contains a reference to all its textures (for drawing to screen)
-		result.push_back(texture);
+		textures.push_back(texture);
 	}
 
-	return result;
 }

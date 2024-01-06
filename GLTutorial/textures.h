@@ -4,7 +4,9 @@
 struct Texture {
 	unsigned int id;
 	std::string type; //"diffuse" or "specular"
-	const char* path;
+
+	Texture() { id = 0; type = ""; }
+	Texture(unsigned int id, const std::string& type) : id(id), type(type) {}
 };
 
 class TextureLoader {

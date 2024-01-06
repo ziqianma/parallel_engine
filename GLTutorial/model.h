@@ -1,5 +1,4 @@
-#ifndef MODEL_H
-#define MODEL_H
+#pragma once
 
 #include "mesh.h"
 #include <map>
@@ -9,16 +8,18 @@
 
 class Model {
 public:
-	Model(const std::string& path) {
+	Model(const Shader& shader, const std::string& path) : m_Shader(shader) {
 		loadModel(path);
 	}
+
 	void Draw(const Shader& shader);
 private:
 	std::vector<Mesh> meshes;
 	std::string directory;
+	Shader m_Shader;
+
 	void loadModel(const std::string& path);
 	void processNode(aiNode* node, const aiScene* scene);
 	void processMesh(aiMesh* mesh, const aiScene* scene);
-	std::vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName);
+	void loadMaterialTextures(std::vector<Texture>& textures, aiMaterial* mat, aiTextureType type, const std::string& typeName);
 };
-#endif
