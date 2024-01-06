@@ -39,16 +39,15 @@ void Model::processNode(aiNode* node, const aiScene* scene) {
 }
 
 void Model::processMesh(aiMesh* mesh, const aiScene* scene) {
-	//std::vector<Vertex> vertices;
+	unsigned int numVerts = mesh->mNumVertices;
 
-	std::vector<Vertex> vertices;
-	vertices.reserve(mesh->mNumVertices);
-
-	std::vector<unsigned int> indices;
+	Vertex* vertices = new Vertex[numVerts];
+	unsigned int* indices = new unsigned int[numVerts];
 	std::vector<Texture> textures;
 
+
 	// Translate all vertex data
-	for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
+	for (unsigned int i = 0; i < numVerts; i++) {
 		
 		glm::vec3 position;
 		position.x = mesh->mVertices[i].x;
@@ -66,15 +65,17 @@ void Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 			texCoord.y = mesh->mTextureCoords[0][i].y;
 		}
 
-		vertices.emplace_back(position, normal, texCoord);
+		vertices[i] = Vertex(position, normal, texCoord);
 	}
 
 	// Translate index data
+	int currentIndex = 0;
 	for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
 		aiFace face = mesh->mFaces[i];
-		for (unsigned int j = 0; j < face.mNumIndices; j++) {
-			indices.push_back(face.mIndices[j]);
+		for (int j = 0; j < face.mNumIndices; j++) {
+			indices[currentIndex + j] = (face.mIndices[j]);
 		}
+		currentIndex += face.mNumIndices;
 	}
 
 	aiColor3D ambient(0.f, 0.f, 0.f);
@@ -97,7 +98,7 @@ void Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 		material->Get(AI_MATKEY_COLOR_SPECULAR, specular);
 	}
 
-	meshes.emplace_back(m_Shader, vertices, indices, textures, glm::vec3(ambient.r, ambient.g, ambient.b), glm::vec3(diffuse.r, diffuse.g, diffuse.b), glm::vec3(specular.r, specular.g, specular.b));
+	meshes.emplace_back(m_Shader, numVerts, vertices, indices, textures, glm::vec3(ambient.r, ambient.g, ambient.b), glm::vec3(diffuse.r, diffuse.g, diffuse.b), glm::vec3(specular.r, specular.g, specular.b));
 }
 
 void Model::loadMaterialTextures(std::vector<Texture>& textures, aiMaterial* mat, aiTextureType type, const std::string& typeName) {

@@ -1,9 +1,11 @@
 #include "mesh.h"
 
 // Constrctor intializes mesh data along with VAO, VBO and EBO
-Mesh::Mesh(const Shader& shader, const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<Texture>& textures, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular) {
-	this->vertices = vertices;
-	this->indices = indices;
+
+Mesh::Mesh(const Shader& shader, unsigned int numVerts, Vertex* vertices, unsigned int* indices, const std::vector<Texture>& textures, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular) {
+	m_Vertices = vertices;
+	m_Indices = indices;
+	m_NumVerts = numVerts;
 	this->textures = textures;
 
 	shader.addUniform3f("material.ambient", ambient.r, ambient.g, ambient.b);
@@ -11,7 +13,11 @@ Mesh::Mesh(const Shader& shader, const std::vector<Vertex>& vertices, const std:
 	shader.addUniform3f("material.specular", specular.r, specular.g, specular.b);
 	setupTextures(shader);
 	setupMesh();
+
+	delete[] m_Vertices;
+	delete[] m_Indices;
 }
+
 
 void Mesh::setupMesh() {
 	// Generate VAO and VBO/EBO
@@ -24,10 +30,10 @@ void Mesh::setupMesh() {
 
 	// Bind VBO/EBO
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, m_NumVerts * sizeof(Vertex), &m_Vertices[0], GL_STATIC_DRAW);
 	
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_NumVerts * sizeof(unsigned int), &m_Indices[0], GL_STATIC_DRAW);
 
 	// First attrib, position
 	glEnableVertexAttribArray(0);
@@ -41,7 +47,7 @@ void Mesh::setupMesh() {
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);	
+	glBindVertexArray(0);
 }
 
 void Mesh::setupTextures(const Shader& shader) {
@@ -76,7 +82,7 @@ void Mesh::Draw(const Shader& shader) {
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, m_NumVerts, GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);

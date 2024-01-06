@@ -49,6 +49,7 @@ int main(void)
 
     std::string workingDir = std::filesystem::current_path().generic_string();
     Model ourModel(ourShader, workingDir + "/" + "resources/model/backpack/backpack.obj");
+
     std::string cubeTexturePath = workingDir + "/" + "resources/redstone_lamp_on.png";
     Cube lightCube = Cube::Cube(lightShader, cubeTexturePath);
 
