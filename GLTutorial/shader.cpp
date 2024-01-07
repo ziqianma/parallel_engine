@@ -1,6 +1,6 @@
 #include "shader.h"
 
-Shader::Shader(const char* vertexShaderPath, const char* fragmentShaderPath) {
+Shader::Shader(const char* vertexShaderPath, const char* fragmentShaderPath, bool compile) {
     // 1. retrieve the vertex/fragment source code from filePath
     std::ifstream vShaderFile;
     std::ifstream fShaderFile;
@@ -28,7 +28,7 @@ Shader::Shader(const char* vertexShaderPath, const char* fragmentShaderPath) {
         std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
     }
 
-    createShaderProgram();
+    if(compile) createShaderProgram();
 }
 
 void Shader::addUniform4f(const std::string& name, float x, float y, float z, float w) const {

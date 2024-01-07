@@ -53,6 +53,22 @@ int main(void)
     std::string cubeTexturePath = workingDir + "/" + "resources/redstone_lamp_on.png";
     Cube lightCube = Cube::Cube(lightShader, cubeTexturePath);
 
+    int numLights = 2;
+    ourShader.bind();
+    ourShader.addUniform1i("numPointLights", numLights);
+    for (int i = 0; i < numLights; i++) {
+        std::string num = std::to_string(i);
+
+        ourShader.addUniform3f("pointLights[" + num + "].ambient", 0.1f, 0.1f, 0.1f);
+        ourShader.addUniform3f("pointLights[" + num + "].diffuse", 0.8f, 0.8f, 0.8f);
+        ourShader.addUniform3f("pointLights[" + num + "].specular", 1.0f, 1.0f, 1.0f);
+        ourShader.addUniform3f("pointLights[" + num + "].position", pointLightPositions[i].x, pointLightPositions[i].y, pointLightPositions[i].z);
+        ourShader.addUniform1f("pointLights[" + num + "].constant", 1.0f);
+        ourShader.addUniform1f("pointLights[" + num + "].linear", 0.09f);
+        ourShader.addUniform1f("pointLights[" + num + "].quadratic", 0.032f);
+    }
+    ourShader.unbind();
+
     skyboxShader.bind();
     skyboxShader.addUniform1i("skybox", 0);
     skyboxShader.addUniform1i("skyboxTexture", 0);
@@ -101,6 +117,20 @@ int main(void)
     glBindVertexArray(0);
     skyboxShader.unbind();
 
+    glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+
+    ourShader.bind();
+    ourShader.addUniformMat4("projection", projection);
+    ourShader.unbind();
+
+    skyboxShader.bind();
+    skyboxShader.addUniformMat4("projection", projection);
+    skyboxShader.unbind();
+
+    lightShader.bind();
+    lightShader.addUniformMat4("projection", projection);
+    lightShader.unbind();
+
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
@@ -120,6 +150,8 @@ int main(void)
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
             camera.ProcessKeyboard(RIGHT, dt);
 
+        glm::mat4 view = camera.GetViewMatrix();
+
         // render
         // ------   
 
@@ -127,16 +159,13 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
         glEnable(GL_DEPTH_TEST);
-        DrawScene(lightShader, ourShader, lightCube, ourModel); // render actual scene
+        DrawScene(lightShader, ourShader, lightCube, ourModel, view); // render actual scene
 
         // set depth function to less than or equal (all skybox depth vales are 1.0)
         glDepthFunc(GL_LEQUAL);
 
         skyboxShader.bind();
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        glm::mat4 view = glm::mat4(glm::mat3(camera.GetViewMatrix())); // remove camera translation from view matrix in skybox (we just want rotation/scale)
-        skyboxShader.addUniformMat4("view", view);
-        skyboxShader.addUniformMat4("projection", projection);
+        skyboxShader.addUniformMat4("view", glm::mat4(glm::mat3(view)));
 
         glBindVertexArray(skyboxVAO);
         glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTex);
@@ -189,15 +218,11 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
     camera.ProcessMouseScroll(static_cast<float>(yoffset));
 }
 
-void DrawScene(Shader& lightShader, Shader& ourShader, Cube& lightCube, Model& ourModel) {
-    lightShader.bind();
+void DrawScene(Shader& lightShader, Shader& ourShader, Cube& lightCube, Model& ourModel, glm::mat4 view) {
     glm::mat4 model = glm::mat4(1.0f);
-    glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-    glm::mat4 view = camera.GetViewMatrix();
 
+    lightShader.bind();
     lightShader.addUniformMat4("view", view);
-    lightShader.addUniformMat4("projection", projection);
-
 
     for (glm::vec3 vec : pointLightPositions) {
         model = glm::mat4(1.0f);
@@ -211,24 +236,8 @@ void DrawScene(Shader& lightShader, Shader& ourShader, Cube& lightCube, Model& o
 
     // don't forget to enable shader before setting uniforms
     ourShader.bind();
-    ourShader.addUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
-
-    for (int i = 0; i < 4; i++) {
-        std::string num = std::to_string(i);
-
-        ourShader.addUniform3f("pointLights[" + num + "].ambient", 0.1f, 0.1f, 0.1f);
-        ourShader.addUniform3f("pointLights[" + num + "].diffuse", 0.8f, 0.8f, 0.8f);
-        ourShader.addUniform3f("pointLights[" + num + "].specular", 1.0f, 1.0f, 1.0f);
-        ourShader.addUniform3f("pointLights[" + num + "].position", pointLightPositions[i].x, pointLightPositions[i].y, pointLightPositions[i].z);
-        ourShader.addUniform1f("pointLights[" + num + "].constant", 1.0f);
-        ourShader.addUniform1f("pointLights[" + num + "].linear", 0.09f);
-        ourShader.addUniform1f("pointLights[" + num + "].quadratic", 0.032f);
-    }
-
-    // view/projection transformations
-    model = glm::mat4(1.0f);
-    ourShader.addUniformMat4("projection", projection);
     ourShader.addUniformMat4("view", view);
+    ourShader.addUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
 
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.0f,0.0f,0.0f));

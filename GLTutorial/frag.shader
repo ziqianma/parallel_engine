@@ -1,4 +1,6 @@
 #version 330 core
+#define MAX_LIGHTS 128
+
 out vec4 FragColor;
 
 in vec3 FragPos;
@@ -17,7 +19,7 @@ struct PointLight {
     float quadratic;
 };
 
-uniform PointLight pointLights[4];
+uniform PointLight pointLights[MAX_LIGHTS];
 
 struct Material {
     sampler2D texture_diffuse1;
@@ -28,6 +30,7 @@ struct Material {
 };
 
 uniform Material material;
+uniform int numPointLights;
 
 uniform vec3 viewPos;
 uniform samplerCube skybox;
@@ -40,7 +43,7 @@ void main()
     vec3 viewDir = normalize(viewPos - FragPos);
     vec3 result = vec3(0.0);
 
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < numPointLights; i++) {
         result += CalcPointLight(pointLights[i], norm, FragPos, viewDir);
     }
 

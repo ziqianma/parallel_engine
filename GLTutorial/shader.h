@@ -11,7 +11,7 @@ private:
     std::vector<std::string> uniforms;
     unsigned int _shaderProgram;
 public:
-    Shader(const char* vertexShaderPath, const char* fragmentShaderPath);
+    Shader(const char* vertexShaderPath, const char* fragmentShaderPath, bool compile=true);
     void bind() const;
     void unbind() const;
     void addUniform4f(const std::string& name, float x, float y, float z, float w) const;

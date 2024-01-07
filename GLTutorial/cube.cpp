@@ -32,7 +32,6 @@ void Cube::setupCubeMesh() {
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glBindVertexArray(0);
-	
 }
 
 void Cube::Draw(Shader& shader) {
