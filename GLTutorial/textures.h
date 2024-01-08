@@ -13,6 +13,6 @@ class TextureLoader {
 public:
 	static Texture loadTexture(const char* path, const std::string& directory, std::string typeName);
 private:
-	static std::map<const std::string, Texture> loadedTextures;
+	static std::unordered_map<std::string, Texture> loadedTextures;
 	static unsigned int TextureFromFile(const char* path, const std::string& directory, bool gamma);
 };

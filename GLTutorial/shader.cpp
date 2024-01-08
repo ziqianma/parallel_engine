@@ -1,6 +1,6 @@
 #include "shader.h"
 
-Shader::Shader(const char* vertexShaderPath, const char* fragmentShaderPath, bool compile) {
+Shader::Shader(const char* vertexShaderPath, const char* fragmentShaderPath) {
     // 1. retrieve the vertex/fragment source code from filePath
     std::ifstream vShaderFile;
     std::ifstream fShaderFile;
@@ -28,11 +28,10 @@ Shader::Shader(const char* vertexShaderPath, const char* fragmentShaderPath, boo
         std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
     }
 
-    if(compile) createShaderProgram();
+    createShaderProgram();
 }
 
 void Shader::addUniform4f(const std::string& name, float x, float y, float z, float w) const {
-    glUseProgram(_shaderProgram);
     glUniform4f(glGetUniformLocation(_shaderProgram, name.c_str()), x, y, z, w);
 }
 
@@ -42,22 +41,18 @@ void Shader::addUniform3f(const std::string& name, float x, float y, float z) co
 }
 
 void Shader::addUniform1i(const std::string& name, int x) const {
-    glUseProgram(_shaderProgram);
     glUniform1i(glGetUniformLocation(_shaderProgram, name.c_str()), x);
 }
 
 void Shader::addUniform1f(const std::string& name, float x) const {
-    glUseProgram(_shaderProgram);
     glUniform1f(glGetUniformLocation(_shaderProgram, name.c_str()), x);
 }
 
 void Shader::addUniformMat4(const std::string& name, glm::mat4 data) const {
-    glUseProgram(_shaderProgram);
     glUniformMatrix4fv(glGetUniformLocation(_shaderProgram, name.c_str()), 1, GL_FALSE, glm::value_ptr(data));
 }
 
 void Shader::addUniformMat3(const std::string& name, glm::mat3 data) const {
-    glUseProgram(_shaderProgram);
     glUniformMatrix3fv(glGetUniformLocation(_shaderProgram, name.c_str()), 1, GL_FALSE, glm::value_ptr(data));
 }
 

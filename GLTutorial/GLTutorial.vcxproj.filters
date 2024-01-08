@@ -76,9 +76,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="stb_image.h">
-      <Filter>Source Files\src</Filter>
-    </ClInclude>
     <ClInclude Include="main.h">
       <Filter>Source Files\src</Filter>
     </ClInclude>

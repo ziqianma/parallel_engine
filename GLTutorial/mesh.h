@@ -20,7 +20,7 @@ public:
 	std::vector<Texture> textures;
 	unsigned int m_NumVerts;
 
-	Mesh(const Shader& shader, unsigned int numVerts, Vertex* vertices, unsigned int* indices, const std::vector<Texture> &textures, glm::vec3 ambient = glm::vec3(0.05f), glm::vec3 diffuse = glm::vec3(0.7f), glm::vec3 specular = glm::vec3(1.0f));
+	Mesh(const Shader& shader, unsigned int numVerts, Vertex* vertices, unsigned int* indices, const std::vector<Texture>& textures, glm::vec3 ambient = glm::vec3(0.05f), glm::vec3 diffuse = glm::vec3(0.7f), glm::vec3 specular = glm::vec3(1.0f));
 
 	void Draw(const Shader& shader);
 	void setupTextures(const Shader& shader);

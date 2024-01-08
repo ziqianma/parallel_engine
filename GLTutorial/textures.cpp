@@ -1,9 +1,9 @@
 #include "textures.h"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h" 
+#include <stb_image.h>
 
-std::map<const std::string, Texture> TextureLoader::loadedTextures;
+std::unordered_map<std::string, Texture> TextureLoader::loadedTextures;
 
 Texture TextureLoader::loadTexture(const char* path, const std::string& directory, std::string typeName) {
 	for (const auto& [texPath, texture] : loadedTextures) {

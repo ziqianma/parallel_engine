@@ -1,6 +1,8 @@
 #pragma once
 
 #include "mesh.h"
+#include <mutex>
+#include <future>
 #include <map>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -15,6 +17,7 @@ public:
 	void Draw(const Shader& shader);
 private:
 	std::vector<Mesh> meshes;
+	std::vector<std::future<void>> m_Futures;
 	std::string directory;
 	Shader m_Shader;
 

@@ -1,5 +1,7 @@
 #include "main.h"
-#include "stb_image.h"  
+#include <memory>
+#include <future>
+#include <stb_image.h>
 
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 float lastX = SCR_WIDTH / 2.0f;
@@ -48,7 +50,10 @@ int main(void)
     Shader skyboxShader = Shader::Shader("skyboxVertex.shader", "skyboxFrag.shader");
 
     std::string workingDir = std::filesystem::current_path().generic_string();
+
     Model ourModel(ourShader, workingDir + "/" + "resources/model/backpack/backpack.obj");
+    //Model* ourModel;
+    //std::future<Model*> model = std::async( std::launch::async, LoadModel, std::ref(ourShader), std::ref(workingDir));
 
     std::string cubeTexturePath = workingDir + "/" + "resources/redstone_lamp_on.png";
     Cube lightCube = Cube::Cube(lightShader, cubeTexturePath);
@@ -159,7 +164,18 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
         glEnable(GL_DEPTH_TEST);
-        DrawScene(lightShader, ourShader, lightCube, ourModel, view); // render actual scene
+        DrawScene(lightShader, ourShader, lightCube, view); // render actual scene
+
+        ourShader.bind();
+        ourShader.addUniformMat4("view", view);
+        ourShader.addUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
+
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+        ourShader.addUniformMat4("model", model);
+        ourModel.Draw(ourShader);
+        ourShader.unbind();
 
         // set depth function to less than or equal (all skybox depth vales are 1.0)
         glDepthFunc(GL_LEQUAL);
@@ -182,7 +198,7 @@ int main(void)
 
     glfwTerminate();
     return 0;
-}
+}   
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
@@ -218,7 +234,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
     camera.ProcessMouseScroll(static_cast<float>(yoffset));
 }
 
-void DrawScene(Shader& lightShader, Shader& ourShader, Cube& lightCube, Model& ourModel, glm::mat4 view) {
+void DrawScene(Shader& lightShader, Shader& ourShader, Cube& lightCube, glm::mat4 view) {
     glm::mat4 model = glm::mat4(1.0f);
 
     lightShader.bind();
@@ -233,16 +249,4 @@ void DrawScene(Shader& lightShader, Shader& ourShader, Cube& lightCube, Model& o
         lightCube.Draw(lightShader);
     }
     lightShader.unbind();
-
-    // don't forget to enable shader before setting uniforms
-    ourShader.bind();
-    ourShader.addUniformMat4("view", view);
-    ourShader.addUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
-
-    model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(0.0f,0.0f,0.0f));
-    model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-    ourShader.addUniformMat4("model", model);
-    ourModel.Draw(ourShader);
-    ourShader.unbind();
 }
