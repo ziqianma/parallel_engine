@@ -1,6 +1,7 @@
 # OpenGL Fun!
 ## Goal is to slowly build a 3D renderer, with learned concepts. 
 Currently use this repository for the implementation of learned concepts and fun graphics side projects.<br />
+Optimization is always in mind! Eventually wanting to restructure into a static library to act as a rendering engine for future hobby projects.<br />
 ### Current / planned features include:
 - Model Loading/Rendering (Batched vertex attributes)
 - Model Material Rendering (Complete w/ diffuse, specular and height (ambient) maps)
