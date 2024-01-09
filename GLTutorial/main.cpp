@@ -139,6 +139,8 @@ int main(void)
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
+        TextureLoader::UpdateTextures();
+
         float currentFrame = static_cast<float>(glfwGetTime());
         dt = currentFrame - lastFrame;
         lastFrame = currentFrame;

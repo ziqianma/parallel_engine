@@ -5,42 +5,28 @@
 #include <stb_image.h>
 
 std::unordered_map<std::string, Texture> TextureLoader::loadedTextures;
+std::vector<std::future<void>> TextureLoader::futures;
+std::stack<Texture> TextureLoader::images;
 
-Texture TextureLoader::loadTexture(const char* path, const std::string& directory, std::string typeName) {
-	AutoProfiler profiler("TextureLoader::loadTexture");
-	for (const auto& [texPath, texture] : loadedTextures) {
-		if (path == texPath) {
-			return texture;
-		}
-	}
+static std::mutex s_imageMutex;
 
-	int id = TextureFromFile(path, directory, false);
+void TextureLoader::LoadData(std::string filename, std::string type, unsigned int textureID) {
+	int width = 0, height = 0, nrComponents = 0;
+	unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
 
-	std::string textureKey = std::string(path);
-	loadedTextures[textureKey] = Texture(id, typeName);
-	
-	return Texture(id, typeName);
+	std::lock_guard<std::mutex> lock(s_imageMutex);
+	images.push(Texture(textureID, type, width, height, nrComponents, data));
 }
 
-unsigned char* LoadData(const char* filename, int* width, int* height, int* nrComponents) {
-	AutoProfiler profiler("TextureLoader::LoadData");
-	return stbi_load(filename, width, height, nrComponents, 0);
-}
+void TextureLoader::UpdateTextures() {
+	if (images.empty()) return;
 
-unsigned int TextureLoader::TextureFromFile(const char* path, const std::string& directory, bool gamma)
-{
-	AutoProfiler profiler("TextureLoader::TextureFromFile");
-	std::cout << "Loading: " << path << std::endl;
-	std::string filename = std::string(path);
-	filename = directory + '/' + filename;
+	Texture texture = images.top();
+	int width = texture.width;
+	int height = texture.height;
+	int nrComponents = texture.nrComponents;
 
-	unsigned int textureID;
-	glGenTextures(1, &textureID);
-
-	int width, height, nrComponents;
-	unsigned char* data = LoadData(filename.c_str(), &width, &height, &nrComponents);
-	//data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
-	if (data)
+	if (texture.data)
 	{
 		GLenum format = GL_RGB;
 		if (nrComponents == 1)
@@ -50,8 +36,8 @@ unsigned int TextureLoader::TextureFromFile(const char* path, const std::string&
 		else if (nrComponents == 4)
 			format = GL_RGBA;
 
-		glBindTexture(GL_TEXTURE_2D, textureID);
-		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+		glBindTexture(GL_TEXTURE_2D, texture.id);
+		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, texture.data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -59,13 +45,46 @@ unsigned int TextureLoader::TextureFromFile(const char* path, const std::string&
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-		stbi_image_free(data);
+		stbi_image_free(texture.data);
+		std::cout << "Loaded: " << texture.id << std::endl;
 	}
 	else
 	{
-		std::cout << "Texture failed to load at path: " << path << std::endl;
-		stbi_image_free(data);
+		std::cout << "Texture failed to load: " << texture.id << std::endl;
+		stbi_image_free(texture.data);
 	}
+	images.pop();
+}
+
+Texture TextureLoader::loadTexture(const char* path, const std::string& directory, const std::string &typeName) {
+	AutoProfiler profiler("TextureLoader::loadTexture");
+	for (const auto& [texPath, texture] : loadedTextures) {
+		if (path == texPath) {
+			return texture;
+		}
+	}
+
+	int id = TextureFromFile(path, directory, false, typeName);
+	return Texture(id, typeName);
+}
+
+unsigned int TextureLoader::TextureFromFile(const char* path, const std::string& directory, bool gamma, const std::string& typeName)
+{
+	AutoProfiler profiler("TextureLoader::TextureFromFile");
+	std::string filename = std::string(path);
+	filename = directory + '/' + filename;
+
+	unsigned int textureID;
+	glGenTextures(1, &textureID);
+#define ASYNC 1
+#if ASYNC
+	futures.push_back(std::async(LoadData, filename, typeName, textureID));
+#else
+	data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
+#endif
+
+	std::string textureKey = std::string(path);
+	loadedTextures[textureKey] = Texture(textureID, typeName);
 
 	return textureID;
 }
