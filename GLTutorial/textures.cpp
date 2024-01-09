@@ -1,4 +1,5 @@
 #include "textures.h"
+#include "timer.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -6,6 +7,7 @@
 std::unordered_map<std::string, Texture> TextureLoader::loadedTextures;
 
 Texture TextureLoader::loadTexture(const char* path, const std::string& directory, std::string typeName) {
+	AutoProfiler profiler("TextureLoader::loadTexture");
 	for (const auto& [texPath, texture] : loadedTextures) {
 		if (path == texPath) {
 			return texture;
@@ -20,8 +22,15 @@ Texture TextureLoader::loadTexture(const char* path, const std::string& director
 	return Texture(id, typeName);
 }
 
+unsigned char* LoadData(const char* filename, int* width, int* height, int* nrComponents) {
+	AutoProfiler profiler("TextureLoader::LoadData");
+	return stbi_load(filename, width, height, nrComponents, 0);
+}
+
 unsigned int TextureLoader::TextureFromFile(const char* path, const std::string& directory, bool gamma)
 {
+	AutoProfiler profiler("TextureLoader::TextureFromFile");
+	std::cout << "Loading: " << path << std::endl;
 	std::string filename = std::string(path);
 	filename = directory + '/' + filename;
 
@@ -29,7 +38,8 @@ unsigned int TextureLoader::TextureFromFile(const char* path, const std::string&
 	glGenTextures(1, &textureID);
 
 	int width, height, nrComponents;
-	unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
+	unsigned char* data = LoadData(filename.c_str(), &width, &height, &nrComponents);
+	//data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
 	if (data)
 	{
 		GLenum format = GL_RGB;

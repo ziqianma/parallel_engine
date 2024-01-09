@@ -172,6 +172,7 @@
     <ClInclude Include="scenenode.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="textures.h" />
+    <ClInclude Include="timer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

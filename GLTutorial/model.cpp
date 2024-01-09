@@ -40,6 +40,7 @@ void Model::processNode(aiNode* node, const aiScene* scene) {
 }
 
 void Model::processMesh(aiMesh* mesh, const aiScene* scene) {
+	AutoProfiler profiler("Mesh::processMesh()");
 	unsigned int numVerts = mesh->mNumVertices;
 
 	Vertex* vertices = new Vertex[numVerts];
@@ -103,7 +104,7 @@ void Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 }
 
 void Model::loadMaterialTextures(std::vector<Texture>& textures, aiMaterial* mat, aiTextureType type, const std::string& typeName) {
-
+	AutoProfiler profiler("Mesh::loadMaterialTextures()");
 	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++) {
 		aiString path;
 		mat->GetTexture(type, i, &path);

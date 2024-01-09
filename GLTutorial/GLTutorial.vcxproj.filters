@@ -100,5 +100,8 @@
     <ClInclude Include="scenenode.h">
       <Filter>Source Files\src</Filter>
     </ClInclude>
+    <ClInclude Include="timer.h">
+      <Filter>Source Files\src</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

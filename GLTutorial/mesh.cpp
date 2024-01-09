@@ -23,6 +23,7 @@ Mesh::Mesh(const Shader& shader, unsigned int numVerts, Vertex* vertices, unsign
 
 
 void Mesh::setupMesh() {
+	//AutoProfiler profiler("Mesh::setupMesh()");
 	// Generate VAO and VBO/EBO
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
