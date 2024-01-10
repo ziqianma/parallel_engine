@@ -51,13 +51,6 @@ int main(void)
 
     std::string workingDir = std::filesystem::current_path().generic_string();
 
-    Model ourModel(ourShader, workingDir + "/" + "resources/model/backpack/backpack.obj");
-    //Model* ourModel;
-    //std::future<Model*> model = std::async( std::launch::async, LoadModel, std::ref(ourShader), std::ref(workingDir));
-
-    std::string cubeTexturePath = workingDir + "/" + "resources/redstone_lamp_on.png";
-    Cube lightCube = Cube::Cube(lightShader, cubeTexturePath);
-
     int numLights = 2;
     ourShader.bind();
     ourShader.addUniform1i("numPointLights", numLights);
@@ -136,11 +129,14 @@ int main(void)
     lightShader.addUniformMat4("projection", projection);
     lightShader.unbind();
 
+    Model ourModel(ourShader, workingDir + "/" + "resources/model/backpack/backpack.obj");
+
+    std::string cubeTexturePath = workingDir + "/" + "resources/redstone_lamp_on.png";
+    Cube lightCube = Cube::Cube(lightShader, cubeTexturePath);
+
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
-        TextureLoader::UpdateTextures();
-
         float currentFrame = static_cast<float>(glfwGetTime());
         dt = currentFrame - lastFrame;
         lastFrame = currentFrame;
@@ -161,6 +157,8 @@ int main(void)
 
         // render
         // ------   
+        
+        TextureLoader::Update();
 
         glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -190,7 +188,7 @@ int main(void)
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glDepthFunc(GL_LESS);
         skyboxShader.unbind();
-        
+
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
 

@@ -74,7 +74,7 @@ void Mesh::setupTextures(const Shader& shader) {
 			number = std::to_string(heightNr++);
 
 		shader.bind();
-		shader.addUniform1i(("material." + name + number).c_str(), i);
+		shader.addUniform1i(("material." + name + number).c_str(), textures[i].id - 1);
 		shader.unbind();
 	}
 }
