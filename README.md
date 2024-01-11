@@ -3,14 +3,13 @@
 Currently use this repository for the implementation of learned concepts and fun graphics side projects.<br />
 Optimization is always in mind! Eventually wanting to restructure into a static library to act as a rendering engine for future hobby projects.<br />
 ### Current / planned features include:
-- Model Loading/Rendering (Batched vertex attributes)
+- Model Loading/Rendering with Assimp (https://github.com/assimp/assimp)
 - Model Material Rendering (Complete w/ diffuse, specular and height (ambient) maps)
-- Basic 3d Camera System
-- Skyboxes, Reflectivity
-- Basic Shape Rendering (Cube, Plane (TODO), Sphere (TODO))
-- Texture Loading System and Rendering
-- Lighting (Point lighting, Spotlight (TODO), Directional Light)
-- Basic custom material generation (colors) (TODO)
+- Multithreaded Texture Loading System
+- Basic 3D Perspective Projection Camera
+- Skyboxes
+- Basic Shape Rendering (Cube, Plane (TODO), Sphere (TODO), Editor (TODO))
+- Basic Lighting, Lighting Editor (TODO)
 - UI system (TODO)
 - Framebuffer system (TODO)
 - Shadows (TODO)
