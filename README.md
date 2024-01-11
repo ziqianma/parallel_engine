@@ -4,8 +4,8 @@ Currently use this repository for the implementation of learned concepts and fun
 Optimization is always in mind! Eventually wanting to restructure into a static library to act as a rendering engine for future hobby projects.<br />
 ### Current / planned features include:
 - Model Loading/Rendering with Assimp (https://github.com/assimp/assimp)
-- Model Material Rendering (Complete w/ diffuse, specular and height (ambient) maps)
-- Multithreaded Texture Loading System
+- Model Lighting (Diffuse + Specular Maps, Ambient/Diffuse/Specular Intensity, Normal Maps (TODO), Roughness Maps (TODO), Emission Maps (TODO))
+- Multithreaded Texture Loading
 - Basic 3D Perspective Projection Camera
 - Skyboxes
 - Basic Shape Rendering (Cube, Plane (TODO), Sphere (TODO), Editor (TODO))
