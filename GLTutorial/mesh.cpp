@@ -60,6 +60,7 @@ void Mesh::setupTextures(const Shader& shader) {
 	unsigned int heightNr = 1;
 
 	for (int i = 0; i < textures.size(); i++) {
+		shader.bind();
 		glActiveTexture(GL_TEXTURE0 + i); // activate proper texture unit before binding
 		glBindTexture(GL_TEXTURE_2D, textures[i].id);
 
@@ -73,15 +74,14 @@ void Mesh::setupTextures(const Shader& shader) {
 		else if (name == "texture_height")
 			number = std::to_string(heightNr++);
 
-		shader.bind();
-		shader.addUniform1i(("material." + name + number).c_str(), textures[i].id - 1);
+		shader.addUniform1i(("material." + name + number).c_str(), i);
 		shader.unbind();
 	}
 }
 
 void Mesh::Draw(const Shader& shader) {
 	shader.bind();
-	glActiveTexture(GL_TEXTURE0);
+	glActiveTexture(GL_TEXTURE0 + 1);
 
 	// draw mesh
 	glBindVertexArray(VAO);

@@ -6,7 +6,7 @@ void Model::Draw(const Shader& shader) {
 	}
 }
 
-void Model::loadModel(const std::string& path) {
+void Model::loadModel(const std::string& path, const Shader &shader) {
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);		
 
@@ -15,10 +15,10 @@ void Model::loadModel(const std::string& path) {
 		return;
 	}
 	directory = path.substr(0, path.find_last_of("/"));
-	processNode(scene->mRootNode, scene);
+	processNode(scene->mRootNode, scene, shader);
 }	
 
-void Model::processNode(aiNode* node, const aiScene* scene) {
+void Model::processNode(aiNode* node, const aiScene* scene, const Shader &shader) {
 
 	// node->mMeshes contain indicies of meshes inside scene->mMeshes
 	// scene->mMeshes contains meshes which make up the entire model.
@@ -29,17 +29,17 @@ void Model::processNode(aiNode* node, const aiScene* scene) {
 
 	for (unsigned int i = 0; i < node->mNumMeshes; i++) {
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-		processMesh(mesh, scene);
+		processMesh(mesh, scene, shader);
 	}
 
 	// Now we recursively process all children of the current node, making sure to add all meshes of the children to our list
 	for (unsigned int i = 0; i < node->mNumChildren; i++) {
-		processNode(node->mChildren[i], scene);
+		processNode(node->mChildren[i], scene, shader);
 	}		
 
 }
 
-void Model::processMesh(aiMesh* mesh, const aiScene* scene) {
+void Model::processMesh(aiMesh* mesh, const aiScene* scene, const Shader &shader) {
 	unsigned int numVerts = mesh->mNumVertices;
 
 	Vertex* vertices = new Vertex[numVerts];
@@ -99,7 +99,7 @@ void Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 		material->Get(AI_MATKEY_COLOR_SPECULAR, specular);
 	}
 
-	meshes.emplace_back(m_Shader, numVerts, vertices, indices, textures, glm::vec3(ambient.r, ambient.g, ambient.b), glm::vec3(diffuse.r, diffuse.g, diffuse.b), glm::vec3(specular.r, specular.g, specular.b));
+	meshes.emplace_back(shader, numVerts, vertices, indices, textures, glm::vec3(ambient.r, ambient.g, ambient.b), glm::vec3(diffuse.r, diffuse.g, diffuse.b), glm::vec3(specular.r, specular.g, specular.b));
 }
 
 void Model::loadMaterialTextures(std::vector<Texture>& textures, aiMaterial* mat, aiTextureType type, const std::string& typeName) {
