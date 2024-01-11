@@ -2,23 +2,13 @@
 
 // Constrctor intializes mesh data along with VAO, VBO and EBO
 
-Mesh::Mesh(const Shader& shader, unsigned int numVerts, Vertex* vertices, unsigned int* indices, const std::vector<Texture>& textures, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular) {
-	m_Vertices = vertices;
-	m_Indices = indices;
-	m_NumVerts = numVerts;
-	this->textures = textures;
-
-	shader.bind();
-	shader.addUniform3f("material.ambient", ambient.r, ambient.g, ambient.b);
-	shader.addUniform3f("material.diffuse", diffuse.r, diffuse.g, diffuse.b);
-	shader.addUniform3f("material.specular", specular.r, specular.g, specular.b);
-	shader.unbind();
-
-	setupTextures(shader);
+Mesh::Mesh(Vertex* vertices, unsigned int* indices, const std::vector<Texture>& textures, unsigned int numVerts) :
+	m_Vertices(vertices),
+	m_Indices(indices),
+	m_Textures(textures),
+	m_NumVerts(numVerts)
+{
 	setupMesh();
-
-	delete[] m_Vertices;
-	delete[] m_Indices;
 }
 
 
@@ -52,37 +42,19 @@ void Mesh::setupMesh() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
-}
 
-void Mesh::setupTextures(const Shader& shader) {
-	unsigned int diffuseNr = 1;
-	unsigned int specularNr = 1;
-	unsigned int heightNr = 1;
-
-	for (int i = 0; i < textures.size(); i++) {
-		shader.bind();
-		glActiveTexture(GL_TEXTURE0 + i); // activate proper texture unit before binding
-		glBindTexture(GL_TEXTURE_2D, textures[i].id);
-
-		// retrieve texture number (the N in diffuse_textureN)
-		std::string number;
-		std::string name = textures[i].type;
-		if (name == "texture_diffuse")
-			number = std::to_string(diffuseNr++);
-		else if (name == "texture_specular")
-			number = std::to_string(specularNr++);
-		else if (name == "texture_height")
-			number = std::to_string(heightNr++);
-
-		shader.addUniform1i(("material." + name + number).c_str(), i);
-		shader.unbind();
-	}
+	// Now that the vertex and index data is uploaded to GPU, we can delete them.
+	delete[] m_Vertices;
+	delete[] m_Indices;
 }
 
 void Mesh::Draw(const Shader& shader) {
-	shader.bind();
-	glActiveTexture(GL_TEXTURE0 + 1);
+	for (int i = 0; i < m_Textures.size(); i++) {
+		glActiveTexture(GL_TEXTURE0 + m_Textures[i].texUnit);
+		glBindTexture(GL_TEXTURE_2D, m_Textures[i].id);
+	}
 
+	shader.bind();
 	// draw mesh
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);

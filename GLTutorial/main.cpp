@@ -3,6 +3,8 @@
 #include <future>
 #include <stb_image.h>
 
+#define NUM_LIGHTS 3
+
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
@@ -51,15 +53,18 @@ int main(void)
 
     std::string workingDir = std::filesystem::current_path().generic_string();
 
-    int numLights = 2;
+    glm::vec3 pointLightAmbient(.2f);
+    glm::vec3 pointLightDiffuse(.5f);
+    glm::vec3 pointLightSpecular(1.0f);
+
     ourShader.bind();
-    ourShader.addUniform1i("numPointLights", numLights);
-    for (int i = 0; i < numLights; i++) {
+    ourShader.addUniform1i("numPointLights", NUM_LIGHTS);
+    for (int i = 0; i < NUM_LIGHTS; i++) {
         std::string num = std::to_string(i);
 
-        ourShader.addUniform3f("pointLights[" + num + "].ambient", 0.1f, 0.1f, 0.1f);
-        ourShader.addUniform3f("pointLights[" + num + "].diffuse", 0.8f, 0.8f, 0.8f);
-        ourShader.addUniform3f("pointLights[" + num + "].specular", 1.0f, 1.0f, 1.0f);
+        ourShader.addUniform3f("pointLights[" + num + "].ambient", pointLightAmbient.r, pointLightAmbient.g, pointLightAmbient.b);
+        ourShader.addUniform3f("pointLights[" + num + "].diffuse", pointLightDiffuse.r, pointLightDiffuse.g, pointLightDiffuse.b);
+        ourShader.addUniform3f("pointLights[" + num + "].specular", pointLightSpecular.r, pointLightSpecular.g, pointLightSpecular.b);
         ourShader.addUniform3f("pointLights[" + num + "].position", pointLightPositions[i].x, pointLightPositions[i].y, pointLightPositions[i].z);
         ourShader.addUniform1f("pointLights[" + num + "].constant", 1.0f);
         ourShader.addUniform1f("pointLights[" + num + "].linear", 0.09f);
@@ -68,37 +73,20 @@ int main(void)
     ourShader.unbind();
 
     skyboxShader.bind();
-    skyboxShader.addUniform1i("skybox", 0);
     skyboxShader.addUniform1i("skyboxTexture", 0);
 
     stbi_set_flip_vertically_on_load(false);
+
     // attach skybox texture
     unsigned int skyboxTex;
     glGenTextures(1, &skyboxTex);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTex);
-    int width, height, nrChannels;
-    for (unsigned int i = 0; i < faces.size(); i++)
-    {
-        unsigned char* data = stbi_load(("resources/skybox/" + faces[i]).c_str(), &width, &height, &nrChannels, 0);
-        if (data)
-        {
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-                0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
-            );
-            stbi_image_free(data);
-        }
-        else
-        {
-            std::cout << "Cubemap tex failed to load at path: " << faces[i] << std::endl;
-            stbi_image_free(data);
-        }
-    }
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    TextureLoader::SkyboxTextureFromFile("resources/skybox", faces, skyboxTex);
     stbi_set_flip_vertically_on_load(true);
+
+    // load and attach model/light textures
+    Model ourModel(workingDir + "/" + "resources/model/backpack/backpack.obj", ourShader);
+    Cube lightCube(lightShader, workingDir + "/" + "resources/redstone_lamp_on.png");
+
 
     // create skybox vao
     unsigned int skyboxVAO, skyboxVBO;
@@ -128,11 +116,6 @@ int main(void)
     lightShader.bind();
     lightShader.addUniformMat4("projection", projection);
     lightShader.unbind();
-
-    Model ourModel(ourShader, workingDir + "/" + "resources/model/backpack/backpack.obj");
-
-    std::string cubeTexturePath = workingDir + "/" + "resources/redstone_lamp_on.png";
-    Cube lightCube = Cube::Cube(lightShader, cubeTexturePath);
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
@@ -240,11 +223,11 @@ void DrawScene(Shader& lightShader, Shader& ourShader, Cube& lightCube, glm::mat
     lightShader.bind();
     lightShader.addUniformMat4("view", view);
 
-    for (glm::vec3 vec : pointLightPositions) {
+    for (int i = 0; i < NUM_LIGHTS; i++) {
         model = glm::mat4(1.0f);
         model = glm::scale(model, glm::vec3(0.5f));
 
-        model = glm::translate(model, vec);
+        model = glm::translate(model, pointLightPositions[i]);
         lightShader.addUniformMat4("model", model);
         lightCube.Draw(lightShader);
     }

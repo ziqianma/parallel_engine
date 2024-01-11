@@ -7,10 +7,9 @@
 class Cube {
 public:
     Cube();
-    Cube(const Shader& shader, std::string& texturePath);
+    Cube(const Shader& shader, const std::string& texturePath);
     void Draw(Shader &shader);
 private:
-    unsigned int cubeTexture;
     unsigned int VAO, VBO;
     float cubeVertices[180] = {
         // Back face
@@ -56,7 +55,8 @@ private:
         -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, // bottom-left  
         -0.5f,  0.5f, -0.5f,  0.0f, 1.0f  // top-left              
     };
-    unsigned int textureID;
+    
+    Texture m_CubeTexture;
     bool hasTexture = false;
     void setupCubeMesh();
 };

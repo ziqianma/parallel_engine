@@ -13,10 +13,9 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset); 
 
 glm::vec3 pointLightPositions[] = {
-    glm::vec3(0.7f,  0.2f,  10.0f),
-    glm::vec3(2.3f, -3.3f, -4.0f),
-    glm::vec3(-4.0f,  2.0f, -12.0f),
-    glm::vec3(0.0f,  0.0f, -3.0f)
+    glm::vec3(2.5f, -3.3f, 4.0f),
+    glm::vec3(-2.0f, 2.0f, 12.0f),
+    glm::vec3(5.0f,  0.0f, 3.0f)
 };
 
 glm::vec3 cubePositions[] = {

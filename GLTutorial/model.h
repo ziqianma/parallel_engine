@@ -10,18 +10,16 @@
 
 class Model {
 public:
-	Model(const Shader& shader, const std::string& path) {
-		loadModel(path, shader);
-	}
-
+	Model(const std::string& path, const Shader& shader);
 	void Draw(const Shader& shader);
 private:
-	std::vector<Mesh> meshes;
+	std::vector<Mesh> m_Meshes;
 	std::vector<std::future<void>> m_Futures;
-	std::string directory;
+	std::string m_Directory;
+	Shader m_Shader;
 
-	void loadModel(const std::string& path, const Shader &shader);
-	void processNode(aiNode* node, const aiScene* scene, const Shader &shader);
-	void processMesh(aiMesh* mesh, const aiScene* scene, const Shader &shader);
+	void loadModel(const std::string& path);
+	void processNode(aiNode* node, const aiScene* scene);
+	void processMesh(aiMesh* mesh, const aiScene* scene);
 	void loadMaterialTextures(std::vector<Texture>& textures, aiMaterial* mat, aiTextureType type, const std::string& typeName);
 };
