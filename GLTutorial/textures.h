@@ -38,7 +38,7 @@ public:
 	static void Update();
 
 	static void TextureFromFile(unsigned int textureID, const std::string& path, bool gamma, const std::string& typeName);
-	static void SkyboxTextureFromFile(const std::string &path, const std::vector<std::string>& faceNames, unsigned int textureID);
+	static Texture LoadSkyboxTexture(const std::string &path, const std::vector<std::string>& faceNames);
 private:
 	static std::vector<std::future<void>> s_Futures;
 

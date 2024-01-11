@@ -103,5 +103,8 @@
     <ClInclude Include="timer.h">
       <Filter>Source Files\src</Filter>
     </ClInclude>
+    <ClInclude Include="skybox.h">
+      <Filter>Source Files\src</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

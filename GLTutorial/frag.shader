@@ -24,6 +24,7 @@ uniform PointLight pointLights[MAX_LIGHTS];
 struct Material {
     sampler2D texture_diffuse1;
     sampler2D texture_specular1;
+    sampler2D texture_bump1;
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;

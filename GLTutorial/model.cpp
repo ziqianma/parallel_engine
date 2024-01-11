@@ -87,8 +87,7 @@ void Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 
 		loadMaterialTextures(textures, material, aiTextureType::aiTextureType_DIFFUSE, "texture_diffuse");
 		loadMaterialTextures(textures, material, aiTextureType::aiTextureType_SPECULAR, "texture_specular");
-		loadMaterialTextures(textures, material, aiTextureType::aiTextureType_NORMALS, "texture_bump");
-
+		loadMaterialTextures(textures, material, aiTextureType::aiTextureType_HEIGHT, "texture_bump");
 	}
 
 	m_Meshes.emplace_back(vertices, indices, textures, numVerts);
@@ -96,10 +95,7 @@ void Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 
 void Model::loadMaterialTextures(std::vector<Texture>& textures, aiMaterial* mat, aiTextureType type, const std::string& typeName) {
 
-	aiColor3D ambient(0.f, 0.f, 0.f);
-	aiColor3D diffuse(0.f, 0.f, 0.f);
-	aiColor3D specular(0.f, 0.f, 0.f);
-	//, glm::vec3 ambient = glm::vec3(0.05f), glm::vec3 diffuse = glm::vec3(0.7f), glm::vec3 specular = glm::vec3(1.0f)
+	aiColor3D ambient, diffuse, specular;
 	mat->Get(AI_MATKEY_COLOR_AMBIENT, ambient);
 	mat->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse);
 	mat->Get(AI_MATKEY_COLOR_SPECULAR, specular);
@@ -120,7 +116,7 @@ void Model::loadMaterialTextures(std::vector<Texture>& textures, aiMaterial* mat
 		Texture texture = TextureLoader::LoadTexture(path, typeName);
 
 		// Add as uniform
-		// typenumber is i+1 since 0th texture is texture_(type)1
+		// typeNumber is i+1 since 0th texture is texture_(type)1
 		std::string typeNumber = std::to_string(i + 1);
 
 		m_Shader.bind();

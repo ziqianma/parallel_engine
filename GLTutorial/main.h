@@ -2,10 +2,14 @@
 
 #include "common.h"
 #include "shader.h"
+#include "skybox.h"
 #include "model.h"
 #include "camera.h"
 #include "cube.h"  
+
 #include <filesystem>
+#include <memory>
+#include <future>
 
 void DrawScene(Shader& lightShader, Shader& ourShader, Cube& lightCube, glm::mat4 view);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -18,19 +22,6 @@ glm::vec3 pointLightPositions[] = {
     glm::vec3(5.0f,  0.0f, 3.0f)
 };
 
-glm::vec3 cubePositions[] = {
-    glm::vec3(0.0f,  -10.0f,  0.0f),
-    glm::vec3(2.0f,  5.0f, -15.0f),
-    glm::vec3(-1.5f, -2.2f, -2.5f),
-    glm::vec3(-3.8f, -2.0f, -12.3f),
-    glm::vec3(2.4f, -0.4f, -3.5f),
-    glm::vec3(-1.7f,  3.0f, -7.5f),
-    glm::vec3(1.3f, -2.0f, -2.5f),
-    glm::vec3(1.5f,  2.0f, -2.5f),
-    glm::vec3(1.5f,  0.2f, -1.5f),
-    glm::vec3(-1.3f,  1.0f, -1.5f)
-};
-
 float quadVertices[] = {  
     // positions   // texCoords
     -1.0f,  1.0f,  0.0f, 1.0f,
@@ -41,62 +32,6 @@ float quadVertices[] = {
      1.0f, -1.0f,  1.0f, 0.0f,
      1.0f,  1.0f,  1.0f, 1.0f
 };	
-
-float rearMirror[] = {
-    // positions   // texCoords
-    -0.25f,  1.0f,  0.0f, 1.0f,
-    -0.25f, 0.75f,  0.0f, 0.0f,
-     0.25f, 0.75f,  1.0f, 0.0f,
-
-    -0.25f,  1.0f,  0.0f, 1.0f,
-     0.25f, 0.75f,  1.0f, 0.0f,
-     0.25f,  1.0f,  1.0f, 1.0f
-};
-
-float skyboxVertices[] = {
-    // positions          
-    -1.0f,  1.0f, -1.0f,
-    -1.0f, -1.0f, -1.0f,
-     1.0f, -1.0f, -1.0f,
-     1.0f, -1.0f, -1.0f,
-     1.0f,  1.0f, -1.0f,
-    -1.0f,  1.0f, -1.0f,
-
-    -1.0f, -1.0f,  1.0f,
-    -1.0f, -1.0f, -1.0f,
-    -1.0f,  1.0f, -1.0f,
-    -1.0f,  1.0f, -1.0f,
-    -1.0f,  1.0f,  1.0f,
-    -1.0f, -1.0f,  1.0f,
-
-     1.0f, -1.0f, -1.0f,
-     1.0f, -1.0f,  1.0f,
-     1.0f,  1.0f,  1.0f,
-     1.0f,  1.0f,  1.0f,
-     1.0f,  1.0f, -1.0f,
-     1.0f, -1.0f, -1.0f,
-
-    -1.0f, -1.0f,  1.0f,
-    -1.0f,  1.0f,  1.0f,
-     1.0f,  1.0f,  1.0f,
-     1.0f,  1.0f,  1.0f,
-     1.0f, -1.0f,  1.0f,
-    -1.0f, -1.0f,  1.0f,
-
-    -1.0f,  1.0f, -1.0f,
-     1.0f,  1.0f, -1.0f,
-     1.0f,  1.0f,  1.0f,
-     1.0f,  1.0f,  1.0f,
-    -1.0f,  1.0f,  1.0f,
-    -1.0f,  1.0f, -1.0f,
-
-    -1.0f, -1.0f, -1.0f,
-    -1.0f, -1.0f,  1.0f,
-     1.0f, -1.0f, -1.0f,
-     1.0f, -1.0f, -1.0f,
-    -1.0f, -1.0f,  1.0f,
-     1.0f, -1.0f,  1.0f
-};
 
 std::vector<std::string> faces
 {

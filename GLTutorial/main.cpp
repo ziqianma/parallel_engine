@@ -1,6 +1,4 @@
 #include "main.h"
-#include <memory>
-#include <future>
 #include <stb_image.h>
 
 #define NUM_LIGHTS 3
@@ -72,36 +70,11 @@ int main(void)
     }
     ourShader.unbind();
 
-    skyboxShader.bind();
-    skyboxShader.addUniform1i("skyboxTexture", 0);
-
-    stbi_set_flip_vertically_on_load(false);
-
-    // attach skybox texture
-    unsigned int skyboxTex;
-    glGenTextures(1, &skyboxTex);
-    TextureLoader::SkyboxTextureFromFile("resources/skybox", faces, skyboxTex);
-    stbi_set_flip_vertically_on_load(true);
+    Skybox skybox(skyboxShader, faces);
 
     // load and attach model/light textures
     Model ourModel(workingDir + "/" + "resources/model/backpack/backpack.obj", ourShader);
     Cube lightCube(lightShader, workingDir + "/" + "resources/redstone_lamp_on.png");
-
-
-    // create skybox vao
-    unsigned int skyboxVAO, skyboxVBO;
-    glGenVertexArrays(1, &skyboxVAO);
-    glGenBuffers(1, &skyboxVBO);
-
-    glBindVertexArray(skyboxVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), skyboxVertices, GL_STATIC_DRAW);
-
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-
-    glBindVertexArray(0);
-    skyboxShader.unbind();
 
     glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 
@@ -160,17 +133,7 @@ int main(void)
         ourModel.Draw(ourShader);
         ourShader.unbind();
 
-        // set depth function to less than or equal (all skybox depth vales are 1.0)
-        glDepthFunc(GL_LEQUAL);
-
-        skyboxShader.bind();
-        skyboxShader.addUniformMat4("view", glm::mat4(glm::mat3(view)));
-
-        glBindVertexArray(skyboxVAO);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTex);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        glDepthFunc(GL_LESS);
-        skyboxShader.unbind();
+        skybox.Draw(view);
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
