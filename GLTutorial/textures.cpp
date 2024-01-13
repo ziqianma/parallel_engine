@@ -46,6 +46,11 @@ void TextureLoader::Update()
 				format = GL_RGBA;
 
 			glBindTexture(GL_TEXTURE_2D, id);
+			if (width % 4 != 0) {
+				// Default row alignment for images is 4
+				width = width - (width % 4);
+				std::cout << "OpenGL default row alignment for images is 4. Width must be a multiple of 4! Changing to be muliple of 4" << std::endl;
+			}
 			glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
 			glGenerateMipmap(GL_TEXTURE_2D);
 

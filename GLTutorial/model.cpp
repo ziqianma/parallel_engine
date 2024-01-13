@@ -39,12 +39,17 @@ void Model::processNode(aiNode* node, const aiScene* scene) {
 }
 
 void Model::processMesh(aiMesh* mesh, const aiScene* scene) {
-	unsigned int numVerts = mesh->mNumVertices;
 
-	Vertex* vertices = new Vertex[numVerts];
-	unsigned int* indices = new unsigned int[numVerts];
+	//Vertex* vertices = new Vertex[numVerts];
+	//unsigned int* indices = new unsigned int[numVerts];
+
+	std::vector<Vertex> vertices;
+	std::vector<unsigned int> indices;
 	std::vector<Texture> textures;
 
+	unsigned int numVerts = mesh->mNumVertices;
+	vertices.reserve(numVerts);
+	indices.reserve(numVerts);
 
 	// Translate all vertex data
 	for (unsigned int i = 0; i < numVerts; i++) {
@@ -58,24 +63,22 @@ void Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 		normal.x = mesh->mNormals[i].x;
 		normal.y = mesh->mNormals[i].y;
 		normal.z = mesh->mNormals[i].z;
-		
+			
 		glm::vec2 texCoord = glm::vec2(0.0f, 0.0f);
 		if (mesh->mTextureCoords[0]) {
 			texCoord.x = mesh->mTextureCoords[0][i].x;
 			texCoord.y = mesh->mTextureCoords[0][i].y;
 		}
 
-		vertices[i] = Vertex(position, normal, texCoord);
+		vertices.emplace_back(position, normal, texCoord);
 	}
 
 	// Translate index data
-	int currentIndex = 0;
 	for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
 		aiFace face = mesh->mFaces[i];
 		for (int j = 0; j < face.mNumIndices; j++) {
-			indices[currentIndex + j] = face.mIndices[j];
+			indices.push_back(face.mIndices[j]);
 		}
-		currentIndex += face.mNumIndices;
 	}
 
 	if (mesh->mMaterialIndex >= 0) {

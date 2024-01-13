@@ -42,36 +42,27 @@
     <ClCompile Include="textures.cpp">
       <Filter>Source Files\src</Filter>
     </ClCompile>
+    <ClCompile Include="light.cpp">
+      <Filter>Source Files\src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="vertex.shader">
+    <None Include="shaders\vertex.shader">
       <Filter>Resource Files\shaders</Filter>
     </None>
-    <None Include="frag.shader">
+    <None Include="shaders\frag.shader">
       <Filter>Resource Files\shaders</Filter>
     </None>
-    <None Include="fragLight.shader">
+    <None Include="shaders\fragLight.shader">
       <Filter>Resource Files\shaders</Filter>
     </None>
-    <None Include="vertexLight.shader">
+    <None Include="shaders\vertexLight.shader">
       <Filter>Resource Files\shaders</Filter>
     </None>
-    <None Include="shaderBorderColor.shader">
+    <None Include="shaders\skyboxVertex.shader">
       <Filter>Resource Files\shaders</Filter>
     </None>
-    <None Include="shaderBorderColorVertex.shader">
-      <Filter>Resource Files\shaders</Filter>
-    </None>
-    <None Include="framebuffervertex.shader">
-      <Filter>Resource Files\shaders</Filter>
-    </None>
-    <None Include="framebufferfrag.shader">
-      <Filter>Resource Files\shaders</Filter>
-    </None>
-    <None Include="skyboxVertex.shader">
-      <Filter>Resource Files\shaders</Filter>
-    </None>
-    <None Include="skyboxFrag.shader">
+    <None Include="shaders\skyboxFrag.shader">
       <Filter>Resource Files\shaders</Filter>
     </None>
   </ItemGroup>
@@ -97,13 +88,13 @@
     <ClInclude Include="textures.h">
       <Filter>Source Files\src</Filter>
     </ClInclude>
-    <ClInclude Include="scenenode.h">
-      <Filter>Source Files\src</Filter>
-    </ClInclude>
     <ClInclude Include="timer.h">
       <Filter>Source Files\src</Filter>
     </ClInclude>
     <ClInclude Include="skybox.h">
+      <Filter>Source Files\src</Filter>
+    </ClInclude>
+    <ClInclude Include="light.h">
       <Filter>Source Files\src</Filter>
     </ClInclude>
   </ItemGroup>

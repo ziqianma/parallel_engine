@@ -16,18 +16,12 @@ struct Vertex {
 class Mesh {
 public:
 
-	Mesh(Vertex* vertices, unsigned int* indices, const std::vector<Texture>& textures, unsigned int numVerts);
-
+	Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<Texture>& textures, unsigned int numVerts);
 	void Draw(const Shader& shader);
-	void setupTextures(const Shader& shader);
 private:
 	unsigned int VAO, VBO, EBO;
-
-	Vertex* m_Vertices;
-	unsigned int* m_Indices;
 	std::vector<Texture> m_Textures;
-
 	unsigned int m_NumVerts;
 
-	void setupMesh();
+	void setupMesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices);
 };

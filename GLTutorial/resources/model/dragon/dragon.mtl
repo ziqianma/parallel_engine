@@ -1,0 +1,35 @@
+# Blender 4.0.2 MTL File: 'dragon.blend'
+# www.blender.org
+
+newmtl MI_M_B_43_Longhaikuilei_body
+Ns 20.000006
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 1
+map_Kd T_M_B_43_Longhaikuilei_body_B.png
+map_Bump -bm 1.000000 T_M_B_43_Longhaikuilei_body_N.png
+
+newmtl MI_M_B_43_Longhaikuilei_hand
+Ns 20.000006
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 1
+map_Kd T_M_B_43_Longhaikuilei_hand_B.png
+map_Bump -bm 1.000000 T_M_B_43_Longhaikuilei_hand_N.png
+
+newmtl MI_M_B_43_Longhaikuilei_head
+Ns 20.000006
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 1
+map_Kd T_M_B_43_Longhaikuilei_head_B.png
+map_Bump -bm 1.000000 T_M_B_43_Longhaikuilei_head_N.png

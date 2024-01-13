@@ -3,6 +3,8 @@
 
 #define NUM_LIGHTS 3
 
+std::string workingDir = std::filesystem::current_path().generic_string();
+
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
@@ -45,14 +47,12 @@ int main(void)
     std::cout << glGetString(GL_VERSION) << std::endl;
 
     // create shader
-    Shader ourShader = Shader::Shader("vertex.shader", "frag.shader");
-    Shader lightShader = Shader::Shader("vertexLight.shader", "fragLight.shader");
-    Shader skyboxShader = Shader::Shader("skyboxVertex.shader", "skyboxFrag.shader");
+    Shader ourShader = Shader::Shader("shaders/vertex.shader", "shaders/frag.shader");
+    Shader lightShader = Shader::Shader("shaders/vertexLight.shader", "shaders/fragLight.shader");
+    Shader skyboxShader = Shader::Shader("shaders/skyboxVertex.shader", "shaders/skyboxFrag.shader");
 
-    std::string workingDir = std::filesystem::current_path().generic_string();
-
-    glm::vec3 pointLightAmbient(.2f);
-    glm::vec3 pointLightDiffuse(.5f);
+    glm::vec3 pointLightAmbient(.1f);       
+    glm::vec3 pointLightDiffuse(.6f);
     glm::vec3 pointLightSpecular(1.0f);
 
     ourShader.bind();
@@ -63,17 +63,29 @@ int main(void)
         ourShader.addUniform3f("pointLights[" + num + "].ambient", pointLightAmbient.r, pointLightAmbient.g, pointLightAmbient.b);
         ourShader.addUniform3f("pointLights[" + num + "].diffuse", pointLightDiffuse.r, pointLightDiffuse.g, pointLightDiffuse.b);
         ourShader.addUniform3f("pointLights[" + num + "].specular", pointLightSpecular.r, pointLightSpecular.g, pointLightSpecular.b);
-        ourShader.addUniform3f("pointLights[" + num + "].position", pointLightPositions[i].x, pointLightPositions[i].y, pointLightPositions[i].z);
+        ourShader.addUniform3f("pointLights[" + num + "].position", pointLightPositions[i].x,   pointLightPositions[i].y, pointLightPositions[i].z);
         ourShader.addUniform1f("pointLights[" + num + "].constant", 1.0f);
         ourShader.addUniform1f("pointLights[" + num + "].linear", 0.09f);
         ourShader.addUniform1f("pointLights[" + num + "].quadratic", 0.032f);
     }
+
+    pointLightAmbient = glm::vec3(.0f);
+    pointLightDiffuse = glm::vec3(0.0f,1.0f,.0f);
+    pointLightSpecular = glm::vec3(0.0f);
+    ourShader.addUniform3f("sun.ambient", pointLightAmbient.r, pointLightAmbient.g, pointLightAmbient.b);
+    ourShader.addUniform3f("sun.diffuse", pointLightDiffuse.r, pointLightDiffuse.g, pointLightDiffuse.b);
+    ourShader.addUniform3f("sun.specular", pointLightSpecular.r, pointLightSpecular.g, pointLightSpecular.b);
+
+    glm::vec3 sunDirection = glm::vec3(0.0f, -1.0f, 0.0);
+    ourShader.addUniform3f("sun.direction", sunDirection.x, sunDirection.y, sunDirection.z);
     ourShader.unbind();
 
-    Skybox skybox(skyboxShader, faces);
+    Skybox skybox(skyboxShader, faces); 
 
     // load and attach model/light textures
     Model ourModel(workingDir + "/" + "resources/model/backpack/backpack.obj", ourShader);
+    //Model restaurantModel(workingDir + "/" + "resources/model/tanabata/source/tanabata.fbx", ourShader);
+
     Cube lightCube(lightShader, workingDir + "/" + "resources/redstone_lamp_on.png");
 
     glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
@@ -120,15 +132,30 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
         glEnable(GL_DEPTH_TEST);
-        DrawScene(lightShader, ourShader, lightCube, view); // render actual scene
+        //render lights
+        glm::mat4 lightModel = glm::mat4(1.0f);
 
+        lightShader.bind();
+        lightShader.addUniformMat4("view", view);
+
+        for (int i = 0; i < NUM_LIGHTS; i++) {
+            lightModel = glm::mat4(1.0f);
+            lightModel = glm::scale(lightModel, glm::vec3(0.5f));
+
+            lightModel = glm::translate(lightModel, pointLightPositions[i]);
+            lightShader.addUniformMat4("model", lightModel);
+            lightCube.Draw(lightShader);
+        }
+        lightShader.unbind();
+
+        // render model
         ourShader.bind();
         ourShader.addUniformMat4("view", view);
         ourShader.addUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+        model = glm::scale(model, glm::vec3(1.0f,1.0f,1.0f));
         ourShader.addUniformMat4("model", model);
         ourModel.Draw(ourShader);
         ourShader.unbind();
@@ -178,21 +205,4 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
     camera.ProcessMouseScroll(static_cast<float>(yoffset));
-}
-
-void DrawScene(Shader& lightShader, Shader& ourShader, Cube& lightCube, glm::mat4 view) {
-    glm::mat4 model = glm::mat4(1.0f);
-
-    lightShader.bind();
-    lightShader.addUniformMat4("view", view);
-
-    for (int i = 0; i < NUM_LIGHTS; i++) {
-        model = glm::mat4(1.0f);
-        model = glm::scale(model, glm::vec3(0.5f));
-
-        model = glm::translate(model, pointLightPositions[i]);
-        lightShader.addUniformMat4("model", model);
-        lightCube.Draw(lightShader);
-    }
-    lightShader.unbind();
 }

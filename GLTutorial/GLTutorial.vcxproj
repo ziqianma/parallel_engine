@@ -145,6 +145,7 @@
   <ItemGroup>
     <ClCompile Include="camera.h" />
     <ClCompile Include="cube.cpp" />
+    <ClCompile Include="light.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mesh.cpp" />
     <ClCompile Include="model.cpp" />
@@ -152,24 +153,20 @@
     <ClCompile Include="textures.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="frag.shader" />
-    <None Include="fragLight.shader" />
-    <None Include="framebufferfrag.shader" />
-    <None Include="framebuffervertex.shader" />
-    <None Include="shaderBorderColor.shader" />
-    <None Include="shaderBorderColorVertex.shader" />
-    <None Include="skyboxFrag.shader" />
-    <None Include="skyboxVertex.shader" />
-    <None Include="vertex.shader" />
-    <None Include="vertexLight.shader" />
+    <None Include="shaders\frag.shader" />
+    <None Include="shaders\fragLight.shader" />
+    <None Include="shaders\skyboxFrag.shader" />
+    <None Include="shaders\skyboxVertex.shader" />
+    <None Include="shaders\vertex.shader" />
+    <None Include="shaders\vertexLight.shader" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common.h" />
     <ClInclude Include="cube.h" />
+    <ClInclude Include="light.h" />
     <ClInclude Include="model.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="mesh.h" />
-    <ClInclude Include="scenenode.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="skybox.h" />
     <ClInclude Include="textures.h" />

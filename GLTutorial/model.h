@@ -14,7 +14,6 @@ public:
 	void Draw(const Shader& shader);
 private:
 	std::vector<Mesh> m_Meshes;
-	std::vector<std::future<void>> m_Futures;
 	std::string m_Directory;
 	Shader m_Shader;
 

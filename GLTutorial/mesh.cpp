@@ -2,17 +2,15 @@
 
 // Constrctor intializes mesh data along with VAO, VBO and EBO
 
-Mesh::Mesh(Vertex* vertices, unsigned int* indices, const std::vector<Texture>& textures, unsigned int numVerts) :
-	m_Vertices(vertices),
-	m_Indices(indices),
+Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<Texture>& textures, unsigned int numVerts) :
 	m_Textures(textures),
 	m_NumVerts(numVerts)
 {
-	setupMesh();
+	setupMesh(vertices, indices);
 }
 
 
-void Mesh::setupMesh() {
+void Mesh::setupMesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices) {
 	//AutoProfiler profiler("Mesh::setupMesh()");
 	// Generate VAO and VBO/EBO
 	glGenVertexArrays(1, &VAO);
@@ -24,10 +22,10 @@ void Mesh::setupMesh() {
 
 	// Bind VBO/EBO
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, m_NumVerts * sizeof(Vertex), &m_Vertices[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_NumVerts * sizeof(unsigned int), &m_Indices[0], GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
 
 	// First attrib, position
 	glEnableVertexAttribArray(0);
@@ -42,10 +40,6 @@ void Mesh::setupMesh() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
-
-	// Now that the vertex and index data is uploaded to GPU, we can delete them.
-	delete[] m_Vertices;
-	delete[] m_Indices;
 }
 
 void Mesh::Draw(const Shader& shader) {
