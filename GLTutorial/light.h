@@ -1,25 +1,28 @@
 #pragma once
+#define MAX_POINT_LIGHTS 128
+
 #include "common.h"
 #include "shader.h"
 
-#define MAX_POINT_LIGHTS 128
-
-struct Light {
+class Light {
 public:
-	Light(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular) :
-		ambient(ambient),
-		diffuse(diffuse),
-		specular(specular) {}
+	Light(const Shader &shader, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular) :
+		m_Ambient(ambient),
+		m_Diffuse(diffuse),
+		m_Specular(specular) 
+	{}
+protected:
+	glm::vec3 m_Ambient;
+	glm::vec3 m_Diffuse;
+	glm::vec3 m_Specular;
 
-	glm::vec3 ambient;
-	glm::vec3 diffuse;
-	glm::vec3 specular;
+	virtual void setupLight(const Shader& shader) const = 0;
 };
   
-class DirLight {
+class DirLight : public Light {
 public:
 	DirLight(const Shader& shader, glm::vec3 direction, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, const std::string& name) :
-		m_Light(std::move(Light(ambient, diffuse, specular))),
+		Light(shader, ambient, diffuse, specular),
 		m_Direction(direction),
 		m_Name(name)
 	{
@@ -27,31 +30,24 @@ public:
 	}
 private:
 	std::string m_Name;
-	Light m_Light;
 	glm::vec3 m_Direction;
 
-	void setupLight(const Shader& shader);
+	void setupLight(const Shader& shader) const override;
 };
 
-class PointLight {
-	PointLight(const Shader& shader, glm::vec3 position, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular) :
-		m_Light(std::move(Light(ambient, diffuse, specular))),
-		m_Position(position)
-	{}
-
-	void setupLight(const Shader & shader, int index);
-private:
-	Light m_Light;
-	glm::vec3 m_Position;
-
-};
-
-class LightManager {
+class PointLight : public Light {
 public:
-	LightManager(const Shader& shader, DirLight sun, const std::vector<glm::vec3>& positions, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular);
-private:
-	DirLight m_Sun;
-	std::vector<PointLight> m_PointLights;
+	PointLight(const Shader& shader, unsigned int shaderIndex, glm::vec3 position, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular) :
+		Light(shader, ambient, diffuse, specular),
+		m_Position(position),
+		m_ShaderIndex(shaderIndex)
+	{
+		setupLight(shader);
+	}
 
-	void setupLights(const Shader& shader);
+	void setupLight(const Shader & shader) const override;
+private:
+	glm::vec3 m_Position;
+	unsigned int m_ShaderIndex;
+
 };

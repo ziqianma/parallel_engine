@@ -1,8 +1,6 @@
 #include "main.h"
 #include <stb_image.h>
 
-#define NUM_LIGHTS 3
-
 std::string workingDir = std::filesystem::current_path().generic_string();
 
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
@@ -51,34 +49,22 @@ int main(void)
     Shader lightShader = Shader::Shader("shaders/vertexLight.shader", "shaders/fragLight.shader");
     Shader skyboxShader = Shader::Shader("shaders/skyboxVertex.shader", "shaders/skyboxFrag.shader");
 
+    int numPointLights = 3;
+
+    ourShader.bind();
+    ourShader.addUniform1i("numPointLights", numPointLights);
+    ourShader.unbind();
+
+    DirLight sun(ourShader, glm::vec3(0.0f, -1.0f, 0.0), glm::vec3(.0f), glm::vec3(.0f, 1.0f, .0f), glm::vec3(.0f), "sun");
+    std::vector<PointLight> pointLights;
+
     glm::vec3 pointLightAmbient(.1f);       
     glm::vec3 pointLightDiffuse(.6f);
     glm::vec3 pointLightSpecular(1.0f);
 
-    ourShader.bind();
-    ourShader.addUniform1i("numPointLights", NUM_LIGHTS);
-    for (int i = 0; i < NUM_LIGHTS; i++) {
-        std::string num = std::to_string(i);
-
-        ourShader.addUniform3f("pointLights[" + num + "].ambient", pointLightAmbient.r, pointLightAmbient.g, pointLightAmbient.b);
-        ourShader.addUniform3f("pointLights[" + num + "].diffuse", pointLightDiffuse.r, pointLightDiffuse.g, pointLightDiffuse.b);
-        ourShader.addUniform3f("pointLights[" + num + "].specular", pointLightSpecular.r, pointLightSpecular.g, pointLightSpecular.b);
-        ourShader.addUniform3f("pointLights[" + num + "].position", pointLightPositions[i].x,   pointLightPositions[i].y, pointLightPositions[i].z);
-        ourShader.addUniform1f("pointLights[" + num + "].constant", 1.0f);
-        ourShader.addUniform1f("pointLights[" + num + "].linear", 0.09f);
-        ourShader.addUniform1f("pointLights[" + num + "].quadratic", 0.032f);
+    for (int i = 0; i < numPointLights; i++) {
+        pointLights.emplace_back(ourShader, i, pointLightPositions[i], pointLightAmbient, pointLightDiffuse, pointLightSpecular);
     }
-
-    pointLightAmbient = glm::vec3(.0f);
-    pointLightDiffuse = glm::vec3(0.0f,1.0f,.0f);
-    pointLightSpecular = glm::vec3(0.0f);
-    ourShader.addUniform3f("sun.ambient", pointLightAmbient.r, pointLightAmbient.g, pointLightAmbient.b);
-    ourShader.addUniform3f("sun.diffuse", pointLightDiffuse.r, pointLightDiffuse.g, pointLightDiffuse.b);
-    ourShader.addUniform3f("sun.specular", pointLightSpecular.r, pointLightSpecular.g, pointLightSpecular.b);
-
-    glm::vec3 sunDirection = glm::vec3(0.0f, -1.0f, 0.0);
-    ourShader.addUniform3f("sun.direction", sunDirection.x, sunDirection.y, sunDirection.z);
-    ourShader.unbind();
 
     Skybox skybox(skyboxShader, faces); 
 
@@ -138,7 +124,7 @@ int main(void)
         lightShader.bind();
         lightShader.addUniformMat4("view", view);
 
-        for (int i = 0; i < NUM_LIGHTS; i++) {
+        for (int i = 0; i < numPointLights; i++) {
             lightModel = glm::mat4(1.0f);
             lightModel = glm::scale(lightModel, glm::vec3(0.5f));
 

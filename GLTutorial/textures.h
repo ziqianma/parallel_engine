@@ -1,4 +1,5 @@
 #pragma once
+
 #include "common.h";
 #include <future>
 #include <queue>
@@ -29,7 +30,6 @@ struct TextureData {
 };
 
 #define ASYNC 1
-// TODO - make this a singleton
 class TextureLoader {
 public:
 	static Texture LoadTexture(const std::string& path, const std::string& typeName);

@@ -6,14 +6,11 @@
 #include "model.h"
 #include "camera.h"
 #include "cube.h"  
+#include "light.h"  
 
 #include <filesystem>
 #include <memory>
 #include <future>
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset); 
 
 glm::vec3 pointLightPositions[] = {
     glm::vec3(2.5f, -3.3f, 4.0f),
@@ -21,7 +18,7 @@ glm::vec3 pointLightPositions[] = {
     glm::vec3(5.0f,  0.0f, 3.0f)
 };
 
-float quadVertices[] = {  
+float quadVertices[] = {
     // positions   // texCoords
     -1.0f,  1.0f,  0.0f, 1.0f,
     -1.0f, -1.0f,  0.0f, 0.0f,
@@ -30,7 +27,7 @@ float quadVertices[] = {
     -1.0f,  1.0f,  0.0f, 1.0f,
      1.0f, -1.0f,  1.0f, 0.0f,
      1.0f,  1.0f,  1.0f, 1.0f
-};	
+};
 
 std::vector<std::string> faces
 {
@@ -42,5 +39,9 @@ std::vector<std::string> faces
     "back.jpg"
 };
 
-const unsigned int SCR_WIDTH = 1920;
-const unsigned int SCR_HEIGHT = 1080;
+static const unsigned int SCR_WIDTH = 1920;
+static const unsigned int SCR_HEIGHT = 1080;
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset); 
