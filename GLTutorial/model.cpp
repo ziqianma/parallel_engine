@@ -97,7 +97,6 @@ void Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 }
 
 void Model::loadMaterialTextures(std::vector<std::string>& texturePaths, aiMaterial* mat, aiTextureType type, const std::string& typeName) {
-
 	aiColor3D ambient, diffuse, specular;
 	mat->Get(AI_MATKEY_COLOR_AMBIENT, ambient);
 	mat->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse);

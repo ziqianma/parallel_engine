@@ -69,7 +69,7 @@ int main(void)
     Skybox skybox(skyboxShader, faces); 
 
     // load and attach model/light textures
-    std::unique_ptr<Model> ourModel = std::make_unique<Model>(workingDir + "/" + "resources/model/backpack/backpack.obj", ourShader);
+    Model* ourModel = new Model(workingDir + "/" + "resources/model/backpack/backpack.obj", ourShader);
     Cube lightCube(cubeShader, workingDir + "/" + "resources/redstone_lamp_on.png");
 
     /* Loop until the user closes the window */
@@ -90,10 +90,12 @@ int main(void)
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
             camera.ProcessKeyboard(RIGHT, dt);
 
-
+        
         if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {
-            ourModel.reset();
+            delete ourModel;
+            ourModel = nullptr;
         }
+        
 
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 
@@ -142,6 +144,7 @@ int main(void)
         ourShader.addUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
         ourShader.unbind();
 
+        
         if (ourModel) {
             ourShader.bind();
             glm::mat4 model = glm::mat4(1.0f);
@@ -152,6 +155,7 @@ int main(void)
 
             ourModel->Draw(ourShader);
         }
+        
 
         skybox.Draw(view);
 

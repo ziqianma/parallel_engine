@@ -14,6 +14,8 @@ static std::mutex s_imageMutex;
 
 Texture::~Texture() {
 	// deallocate texture from gl context
+	unsigned int texID = id;
+	glDeleteTextures(1, &texID);
 }
 
 void TextureLoader::DeleteTexture(const std::string& path) {
