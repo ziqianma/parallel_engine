@@ -1,17 +1,21 @@
 #include "cube.h"
 
 Cube::Cube() {
+    cubeTextureID = -1;
     setupCubeMesh();
 }
 
 Cube::Cube(const Shader& shader, const std::string& texturePath) {
-	m_CubeTexture = TextureLoader::LoadTexture(texturePath, "texture_diffuse");
+    TextureLoader::LoadTexture(texturePath, "texture_diffuse");
+
+    const Texture& temp = TextureLoader::GetTexture(texturePath);
+    cubeTextureID = temp.id;
+    cubeTextureUnit = temp.texUnit;
 
     shader.bind();
-    shader.addUniform1i(m_CubeTexture.type, m_CubeTexture.texUnit);
+    shader.addUniform1i(temp.type, cubeTextureUnit);
     shader.unbind();
 
-    hasTexture = true;
     setupCubeMesh();
 }
 
@@ -31,11 +35,11 @@ void Cube::setupCubeMesh() {
     glBindVertexArray(0);
 }
 
-void Cube::Draw(Shader& shader) {
+void Cube::Draw(const Shader& shader) {
 
-    if (hasTexture) {
-        glActiveTexture(GL_TEXTURE0 + m_CubeTexture.texUnit);
-        glBindTexture(GL_TEXTURE_2D, m_CubeTexture.id);
+    if (cubeTextureID != -1) {
+        glActiveTexture(GL_TEXTURE0 + cubeTextureUnit);
+        glBindTexture(GL_TEXTURE_2D, cubeTextureID);
     }
 
     // draw mesh

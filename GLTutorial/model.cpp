@@ -45,7 +45,7 @@ void Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 
 	std::vector<Vertex> vertices;
 	std::vector<unsigned int> indices;
-	std::vector<Texture> textures;
+	std::vector<std::string> texturePaths;
 
 	unsigned int numVerts = mesh->mNumVertices;
 	vertices.reserve(numVerts);
@@ -86,17 +86,17 @@ void Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 		int diffuseTexCount = material->GetTextureCount(aiTextureType::aiTextureType_DIFFUSE);
 		int specularTexCount = material->GetTextureCount(aiTextureType::aiTextureType_SPECULAR);
 		int normalTexCount = material->GetTextureCount(aiTextureType::aiTextureType_NORMALS);
-		textures.reserve(diffuseTexCount + specularTexCount + normalTexCount);
+		texturePaths.reserve(diffuseTexCount + specularTexCount + normalTexCount);
 
-		loadMaterialTextures(textures, material, aiTextureType::aiTextureType_DIFFUSE, "texture_diffuse");
-		loadMaterialTextures(textures, material, aiTextureType::aiTextureType_SPECULAR, "texture_specular");
-		loadMaterialTextures(textures, material, aiTextureType::aiTextureType_HEIGHT, "texture_bump");
+		loadMaterialTextures(texturePaths, material, aiTextureType::aiTextureType_DIFFUSE, "texture_diffuse");
+		loadMaterialTextures(texturePaths, material, aiTextureType::aiTextureType_SPECULAR, "texture_specular");
+		loadMaterialTextures(texturePaths, material, aiTextureType::aiTextureType_HEIGHT, "texture_bump");
 	}
 
-	m_Meshes.emplace_back(vertices, indices, textures, numVerts);
+	m_Meshes.emplace_back(vertices, indices, texturePaths, numVerts);
 }
 
-void Model::loadMaterialTextures(std::vector<Texture>& textures, aiMaterial* mat, aiTextureType type, const std::string& typeName) {
+void Model::loadMaterialTextures(std::vector<std::string>& texturePaths, aiMaterial* mat, aiTextureType type, const std::string& typeName) {
 
 	aiColor3D ambient, diffuse, specular;
 	mat->Get(AI_MATKEY_COLOR_AMBIENT, ambient);
@@ -116,18 +116,19 @@ void Model::loadMaterialTextures(std::vector<Texture>& textures, aiMaterial* mat
 		std::string path = m_Directory + "/" + std::string(texturePath.C_Str());
 
 		// Load texture from loader
-		Texture texture = TextureLoader::LoadTexture(path, typeName);
+		TextureLoader::LoadTexture(path, typeName);
 
 		// Add as uniform
 		// typeNumber is i+1 since 0th texture is texture_(type)1
 		std::string typeNumber = std::to_string(i + 1);
+		int textureUnit = TextureLoader::GetTexture(path).texUnit;
 
 		m_Shader.bind();
-		m_Shader.addUniform1i(("material." + typeName + typeNumber), texture.texUnit);
+		m_Shader.addUniform1i(("material." + typeName + typeNumber), textureUnit);
 		m_Shader.unbind();
 
 		// add to textures list to pass to mesh
-		textures.push_back(texture);
+		texturePaths.push_back(path);
 	}
 }
 

@@ -8,14 +8,13 @@
 class Skybox {
 public:
 	Skybox(const Shader& shader, const std::vector<std::string>& faces) : m_Shader(shader) {
+        stbi_set_flip_vertically_on_load(false);
+        m_Texture = TextureLoader::LoadSkyboxTexture("resources/skybox", faces, "texture_skybox");
+		stbi_set_flip_vertically_on_load(true);
 
         shader.bind();
-        shader.addUniform1i("skyboxTexture", 0);
+        shader.addUniform1i(m_Texture->type + "1", 0);
         shader.unbind();
-
-        stbi_set_flip_vertically_on_load(false);
-        m_Texture = TextureLoader::LoadSkyboxTexture("resources/skybox", faces);
-		stbi_set_flip_vertically_on_load(true);
         
 		glGenVertexArrays(1, &VAO);
 		glGenBuffers(1, &VBO);
@@ -38,8 +37,8 @@ public:
         m_Shader.addUniformMat4("view", glm::mat4(glm::mat3(viewMatrix)));
 
         glBindVertexArray(VAO);
-        glActiveTexture(GL_TEXTURE0 + m_Texture.texUnit);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, m_Texture.id);
+        glActiveTexture(GL_TEXTURE0 + m_Texture->texUnit);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, m_Texture->id);
         glDrawArrays(GL_TRIANGLES, 0, 36);
         m_Shader.unbind();
 
@@ -48,7 +47,7 @@ public:
 
 private:
 	unsigned int VAO, VBO;
-	Texture m_Texture;
+	std::unique_ptr<Texture> m_Texture;
     Shader m_Shader;
 
     float skyboxVertices[108] = {

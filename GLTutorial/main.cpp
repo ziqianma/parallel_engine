@@ -46,7 +46,7 @@ int main(void)
 
     // create shader
     Shader ourShader = Shader::Shader("shaders/vertex.shader", "shaders/frag.shader");
-    Shader lightShader = Shader::Shader("shaders/vertexLight.shader", "shaders/fragLight.shader");
+    Shader cubeShader = Shader::Shader("shaders/vertexCube.shader", "shaders/fragCube.shader");
     Shader skyboxShader = Shader::Shader("shaders/skyboxVertex.shader", "shaders/skyboxFrag.shader");
 
     int numPointLights = 3;
@@ -69,24 +69,8 @@ int main(void)
     Skybox skybox(skyboxShader, faces); 
 
     // load and attach model/light textures
-    Model ourModel(workingDir + "/" + "resources/model/backpack/backpack.obj", ourShader);
-    //Model restaurantModel(workingDir + "/" + "resources/model/tanabata/source/tanabata.fbx", ourShader);
-
-    Cube lightCube(lightShader, workingDir + "/" + "resources/redstone_lamp_on.png");
-
-    glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-
-    ourShader.bind();
-    ourShader.addUniformMat4("projection", projection);
-    ourShader.unbind();
-
-    skyboxShader.bind();
-    skyboxShader.addUniformMat4("projection", projection);
-    skyboxShader.unbind();
-
-    lightShader.bind();
-    lightShader.addUniformMat4("projection", projection);
-    lightShader.unbind();
+    std::unique_ptr<Model> ourModel = std::make_unique<Model>(workingDir + "/" + "resources/model/backpack/backpack.obj", ourShader);
+    Cube lightCube(cubeShader, workingDir + "/" + "resources/redstone_lamp_on.png");
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
@@ -97,7 +81,6 @@ int main(void)
 
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
-
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
             camera.ProcessKeyboard(FORWARD, dt);
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -106,6 +89,25 @@ int main(void)
             camera.ProcessKeyboard(LEFT, dt);
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
             camera.ProcessKeyboard(RIGHT, dt);
+
+
+        if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {
+            ourModel.reset();
+        }
+
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+
+        ourShader.bind();
+        ourShader.addUniformMat4("projection", projection);
+        ourShader.unbind();
+
+        skyboxShader.bind();
+        skyboxShader.addUniformMat4("projection", projection);
+        skyboxShader.unbind();
+
+        cubeShader.bind();
+        cubeShader.addUniformMat4("projection", projection);
+        cubeShader.unbind();
 
         glm::mat4 view = camera.GetViewMatrix();
 
@@ -121,30 +123,35 @@ int main(void)
         //render lights
         glm::mat4 lightModel = glm::mat4(1.0f);
 
-        lightShader.bind();
-        lightShader.addUniformMat4("view", view);
+        cubeShader.bind();
+        cubeShader.addUniformMat4("view", view);
 
         for (int i = 0; i < numPointLights; i++) {
             lightModel = glm::mat4(1.0f);
             lightModel = glm::scale(lightModel, glm::vec3(0.5f));
 
             lightModel = glm::translate(lightModel, pointLightPositions[i]);
-            lightShader.addUniformMat4("model", lightModel);
-            lightCube.Draw(lightShader);
+            cubeShader.addUniformMat4("model", lightModel);
+            lightCube.Draw(cubeShader);
         }
-        lightShader.unbind();
+        cubeShader.unbind();
 
         // render model
         ourShader.bind();
         ourShader.addUniformMat4("view", view);
         ourShader.addUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
-
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(1.0f,1.0f,1.0f));
-        ourShader.addUniformMat4("model", model);
-        ourModel.Draw(ourShader);
         ourShader.unbind();
+
+        if (ourModel) {
+            ourShader.bind();
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+            model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+            ourShader.addUniformMat4("model", model);
+            ourShader.unbind();
+
+            ourModel->Draw(ourShader);
+        }
 
         skybox.Draw(view);
 

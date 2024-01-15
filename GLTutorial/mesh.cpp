@@ -2,13 +2,24 @@
 
 // Constrctor intializes mesh data along with VAO, VBO and EBO
 
-Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<Texture>& textures, unsigned int numVerts) :
-	m_Textures(textures),
-	m_NumVerts(numVerts)
+Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<std::string>& texturePaths, unsigned int numVerts) :
+	m_NumVerts(numVerts),
+	m_TexturePaths(texturePaths)
 {
 	setupMesh(vertices, indices);
+
+	for (const std::string& texturePath : texturePaths) {
+		const Texture& temp = TextureLoader::GetTexture(texturePath);
+		m_TextureIDs.push_back(temp.id);
+		m_TextureUnits.push_back(temp.texUnit);
+	}
 }
 
+Mesh::~Mesh() {
+	for (const std::string& texturePath : m_TexturePaths) {
+		TextureLoader::DeleteTexture(texturePath);
+	}
+}
 
 void Mesh::setupMesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices) {
 	//AutoProfiler profiler("Mesh::setupMesh()");
@@ -43,9 +54,9 @@ void Mesh::setupMesh(const std::vector<Vertex>& vertices, const std::vector<unsi
 }
 
 void Mesh::Draw(const Shader& shader) {
-	for (int i = 0; i < m_Textures.size(); i++) {
-		glActiveTexture(GL_TEXTURE0 + m_Textures[i].texUnit);
-		glBindTexture(GL_TEXTURE_2D, m_Textures[i].id);
+	for (int i = 0; i < m_TextureIDs.size(); i++) {
+		glActiveTexture(GL_TEXTURE0 + m_TextureUnits[i]);
+		glBindTexture(GL_TEXTURE_2D, m_TextureIDs[i]);
 	}
 
 	shader.bind();

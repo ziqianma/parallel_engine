@@ -15,12 +15,15 @@ struct Vertex {
 
 class Mesh {
 public:
-
-	Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<Texture>& textures, unsigned int numVerts);
+	Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<std::string>& texturePaths, unsigned int numVerts);
+	~Mesh();
 	void Draw(const Shader& shader);
 private:
 	unsigned int VAO, VBO, EBO;
-	std::vector<Texture> m_Textures;
+	std::vector<int> m_TextureIDs;
+	std::vector<std::string> m_TexturePaths;
+	std::vector<int> m_TextureUnits;
+
 	unsigned int m_NumVerts;
 
 	void setupMesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices);

@@ -54,11 +54,11 @@ class Cube {
 public:
     Cube();
     Cube(const Shader& shader, const std::string& texturePath);
-    void Draw(Shader &shader);
+    void Draw(const Shader &shader);
 private:
     unsigned int VAO, VBO;
-    
-    Texture m_CubeTexture;
-    bool hasTexture = false;
+    int cubeTextureID;
+    unsigned int cubeTextureUnit;
+
     void setupCubeMesh();
 };

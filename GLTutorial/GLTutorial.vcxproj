@@ -154,11 +154,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\frag.shader" />
-    <None Include="shaders\fragLight.shader" />
+    <None Include="shaders\fragCube.shader" />
     <None Include="shaders\skyboxFrag.shader" />
     <None Include="shaders\skyboxVertex.shader" />
     <None Include="shaders\vertex.shader" />
-    <None Include="shaders\vertexLight.shader" />
+    <None Include="shaders\vertexCube.shader" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common.h" />

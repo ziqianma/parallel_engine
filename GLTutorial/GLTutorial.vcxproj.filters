@@ -53,10 +53,10 @@
     <None Include="shaders\frag.shader">
       <Filter>Resource Files\shaders</Filter>
     </None>
-    <None Include="shaders\fragLight.shader">
+    <None Include="shaders\fragCube.shader">
       <Filter>Resource Files\shaders</Filter>
     </None>
-    <None Include="shaders\vertexLight.shader">
+    <None Include="shaders\vertexCube.shader">
       <Filter>Resource Files\shaders</Filter>
     </None>
     <None Include="shaders\skyboxVertex.shader">

@@ -6,19 +6,45 @@
 
 std::vector<std::future<void>> TextureLoader::s_Futures;
 
-std::unordered_map<std::string, Texture> TextureLoader::s_LoadedTextures;
+std::unordered_map<std::string, std::unique_ptr<Texture>> TextureLoader::s_LoadedTextures;
 std::queue<TextureData> TextureLoader::s_ProcessingQueue;
 std::queue<unsigned int> TextureLoader::s_AvailableTextureUnits;
 
 static std::mutex s_imageMutex;
 
-void TextureLoader::LoadData(const std::string& path, const Texture& texture) 
+Texture::~Texture() {
+	// deallocate texture from gl context
+}
+
+void TextureLoader::DeleteTexture(const std::string& path) {
+	// delete from loaded textures map, free up texture unit for use.
+
+	// move unqiue_ptr from static map to this unique ptr
+	std::unique_ptr<Texture> texturePtr = std::move(s_LoadedTextures[path]);
+
+	// delete map ref to now hollow unqiue_ptr
+	if (texturePtr) {
+		s_LoadedTextures.erase(path);
+
+		// get texture unit and add back onto available unit stack
+		s_AvailableTextureUnits.push(texturePtr->texUnit);
+
+		// delete unique_ptr
+		texturePtr.reset();
+	}
+}
+
+const Texture& TextureLoader::GetTexture(const std::string& path) {
+	return *(s_LoadedTextures[path]).get();
+}
+
+void TextureLoader::LoadData(const std::string& path, int id) 
 {
 	int width = 0, height = 0, nrComponents = 0;
 	std::lock_guard<std::mutex> lock(s_imageMutex);
 	unsigned char* data = stbi_load(path.c_str(), &width, &height, &nrComponents, 0);
 	
-	s_ProcessingQueue.emplace(texture, path, width, height, nrComponents, data);
+	s_ProcessingQueue.emplace(id, path, width, height, nrComponents, data);
 }
 
 void TextureLoader::Update() 
@@ -30,8 +56,7 @@ void TextureLoader::Update()
 		int width = toLoad.width;
 		int height = toLoad.height;
 
-		Texture texture = toLoad.texture;
-		unsigned int id = texture.id;
+		unsigned int id = toLoad.id;
 
 		unsigned char* data = toLoad.data;
 
@@ -46,11 +71,14 @@ void TextureLoader::Update()
 				format = GL_RGBA;
 
 			glBindTexture(GL_TEXTURE_2D, id);
+
 			if (width % 4 != 0) {
 				// Default row alignment for images is 4
 				width = width - (width % 4);
 				std::cout << "OpenGL default row alignment for images is 4. Width must be a multiple of 4! Changing to be muliple of 4" << std::endl;
 			}
+
+			// Load image data into GL context, delete loaded bitmap data after
 			glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
 			glGenerateMipmap(GL_TEXTURE_2D);
 
@@ -60,7 +88,7 @@ void TextureLoader::Update()
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 			stbi_image_free(data);
-			std::cout << "Loaded: " << toLoad.path << std::endl << "(width, height) : (" << width << ", " << height << "), Texture ID : " << texture.id << ", Texture Unit : " << texture.texUnit << ", Texture Type : " << texture.type << std::endl;
+			std::cout << "Loaded: " << toLoad.path << std::endl << "(width, height) : (" << width << ", " << height << "), Texture ID: " << toLoad.id << std::endl;
 		}
 		else
 		{
@@ -71,7 +99,7 @@ void TextureLoader::Update()
 	}
 }
 
-Texture TextureLoader::LoadTexture(const std::string& path, const std::string &typeName) 
+void TextureLoader::LoadTexture(const std::string& path, const std::string &typeName)
 {
 	
 	// if the loadedTextures map is empty, we can init the available texture units
@@ -82,10 +110,10 @@ Texture TextureLoader::LoadTexture(const std::string& path, const std::string &t
 		}
 	}
 
-	// check if currently requested texture has already been "loaded", if so, return that texture so that (texture name -> texture unit) uniforms can be set up
+	// check if currently requested texture has already been "loaded", if so, don't do anything.
 	for (const auto& [texPath, texture] : s_LoadedTextures) {
 		if (path == texPath) {
-			return texture;
+			return;
 		}
 	}	
 
@@ -95,20 +123,19 @@ Texture TextureLoader::LoadTexture(const std::string& path, const std::string &t
 
 	// If a texture is being initialized for the first time, pop an avaialble texture unit off the queue and assign
 	unsigned int textureUnit = s_AvailableTextureUnits.front();
-	s_LoadedTextures.emplace(path, Texture(textureID, typeName, textureUnit));
 	s_AvailableTextureUnits.pop();
 
+	// push uniquely managed texture pointer into loaded texture map.
+	s_LoadedTextures[path] = std::make_unique<Texture>(textureID, typeName, textureUnit);
+
 #if ASYNC
-	s_Futures.push_back(std::async(std::launch::async, LoadData, path, Texture(textureID, typeName, textureUnit)));
+	s_Futures.push_back(std::async(std::launch::async, LoadData, path, textureID));
 #else
 	TextureFromFile(id, path, false, typeName);
 #endif
-
-
-	return Texture(textureID, typeName, textureUnit); // copy elision!!!
 }
 
-Texture TextureLoader::LoadSkyboxTexture(const std::string& path, const std::vector<std::string>& faceNames) 
+std::unique_ptr<Texture> TextureLoader::LoadSkyboxTexture(const std::string& path, const std::vector<std::string>& faceNames, const std::string& textureType) 
 {
 	if (s_LoadedTextures.empty()) {
 		for (int i = 0; i < MAX_AVAILABLE_TEXTURE_UNITS; i++) {
@@ -145,9 +172,10 @@ Texture TextureLoader::LoadSkyboxTexture(const std::string& path, const std::vec
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
 	unsigned int textureUnit = s_AvailableTextureUnits.front();
-	s_LoadedTextures.emplace(path, Texture(textureID, "", textureUnit));
 	s_AvailableTextureUnits.pop();
-	return Texture(textureID, "", textureUnit);
+
+	// move pointer ownership to skybox class
+	return std::make_unique<Texture>(textureID, textureType, textureUnit);
 }
 
 #if ASYNC
