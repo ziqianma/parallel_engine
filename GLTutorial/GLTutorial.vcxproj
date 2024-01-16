@@ -149,12 +149,15 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mesh.cpp" />
     <ClCompile Include="model.cpp" />
+    <ClCompile Include="plane.cpp" />
     <ClCompile Include="shader.cpp" />
     <ClCompile Include="textures.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\frag.shader" />
     <None Include="shaders\fragCube.shader" />
+    <None Include="shaders\fragPlane.shader" />
+    <None Include="shaders\vertexPlane.shader" />
     <None Include="shaders\skyboxFrag.shader" />
     <None Include="shaders\skyboxVertex.shader" />
     <None Include="shaders\vertex.shader" />
@@ -168,6 +171,7 @@
     <ClInclude Include="main.h" />
     <ClInclude Include="mesh.h" />
     <ClInclude Include="shader.h" />
+    <ClInclude Include="plane.h" />
     <ClInclude Include="skybox.h" />
     <ClInclude Include="textures.h" />
     <ClInclude Include="timer.h" />

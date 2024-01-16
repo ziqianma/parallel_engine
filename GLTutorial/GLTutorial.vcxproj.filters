@@ -45,6 +45,9 @@
     <ClCompile Include="light.cpp">
       <Filter>Source Files\src</Filter>
     </ClCompile>
+    <ClCompile Include="plane.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\vertex.shader">
@@ -65,6 +68,8 @@
     <None Include="shaders\skyboxFrag.shader">
       <Filter>Resource Files\shaders</Filter>
     </None>
+    <None Include="shaders\vertexPlane.shader" />
+    <None Include="shaders\fragPlane.shader" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -96,6 +101,9 @@
     </ClInclude>
     <ClInclude Include="light.h">
       <Filter>Source Files\src</Filter>
+    </ClInclude>
+    <ClInclude Include="plane.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

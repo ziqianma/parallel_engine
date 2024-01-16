@@ -50,37 +50,37 @@ int main(void)
     Shader ourShader = Shader::Shader("shaders/vertex.shader", "shaders/frag.shader");
     Shader cubeShader = Shader::Shader("shaders/vertexCube.shader", "shaders/fragCube.shader");
     Shader skyboxShader = Shader::Shader("shaders/skyboxVertex.shader", "shaders/skyboxFrag.shader");
+    Shader planeShader = Shader::Shader("shaders/vertexPlane.shader", "shaders/fragPlane.shader");
 
-    int numPointLights = 3;
+    DirLight sun(std::vector<Shader>({ourShader,planeShader}), glm::vec3(0.0f, -1.0f, 0.0), glm::vec3(.0f), glm::vec3(.1f, .1f, .1f), glm::vec3(.0f), "sun");
+
+    glm::vec3 pointLightAmbient(.1f);       
+    glm::vec3 pointLightDiffuse(.4f);
+    glm::vec3 pointLightSpecular(1.0f);
+
+    std::vector<glm::mat4> cube_ModelMatrices;
+    int numPointLights = 10;
 
     ourShader.bind();
     ourShader.addUniform1i("numPointLights", numPointLights);
     ourShader.unbind();
 
-    DirLight sun(ourShader, glm::vec3(0.0f, -1.0f, 0.0), glm::vec3(.0f), glm::vec3(.0f, 1.0f, .0f), glm::vec3(.0f), "sun");
-    std::vector<PointLight> pointLights;
+    planeShader.bind();
+    planeShader.addUniform1i("numPointLights", numPointLights);
+    planeShader.unbind();
 
-    glm::vec3 pointLightAmbient(.1f);       
-    glm::vec3 pointLightDiffuse(.6f);
-    glm::vec3 pointLightSpecular(1.0f);
-
-    for (int i = 0; i < numPointLights; i++) {
-        pointLights.emplace_back(ourShader, i, pointLightPositions[i], pointLightAmbient, pointLightDiffuse, pointLightSpecular);
-    }
-
-    Skybox skybox(skyboxShader, faces); 
-
-    std::vector<glm::mat4> modelMatrices;
-
-    unsigned int amount = 500;
     srand(glfwGetTime()); // initialize random seed	
-    float radius = 10.0;
+    float radius = 5.0f;
     float offset = 2.5f;
-    for (unsigned int i = 0; i < amount; i++)
+
+    std::vector<PointLight> pointLights;
+    pointLights.reserve(numPointLights);
+
+    for (unsigned int i = 0; i < numPointLights; i++)
     {
         glm::mat4 model = glm::mat4(1.0f);
         // 1. translation: displace along circle with 'radius' in range [-offset, offset]
-        float angle = (float)i / (float)amount * 360.0f;
+        float angle = (float)i / (float)numPointLights * 360.0f;
         float displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
         float x = sin(angle) * radius + displacement;
         displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
@@ -88,6 +88,8 @@ int main(void)
         displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
         float z = cos(angle) * radius + displacement;
         model = glm::translate(model, glm::vec3(x, y, z));
+
+        pointLights.emplace_back(std::vector<Shader>({ ourShader,planeShader }), i, glm::vec3(x, y, z), pointLightAmbient, pointLightDiffuse, pointLightSpecular);
 
         // 2. scale: scale between 0.05 and 0.25f
         float scale = (rand() % 20) / 100.0f + 0.05;
@@ -98,12 +100,27 @@ int main(void)
         model = glm::rotate(model, rotAngle, glm::vec3(0.4f, 0.6f, 0.8f));
 
         // 4. now add to list of matrices
-        modelMatrices.push_back(model);
+        cube_ModelMatrices.push_back(model);
     }
 
+    std::vector<glm::mat4> model_ModelMatrices;
+    for (int i = 0; i < 9; i++) {
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::scale(model, glm::vec3(0.5f));
+        model = glm::translate(model, modelPositions[i]);
+        model_ModelMatrices.push_back(model);
+    }
+
+    glm::mat4 floor_ModelMatrix = glm::mat4(1.0f);
+    floor_ModelMatrix = glm::translate(floor_ModelMatrix, glm::vec3(0.0f,-5.0f,0.0f));
+    floor_ModelMatrix = glm::scale(floor_ModelMatrix, glm::vec3(10.0f));
+
+    Skybox skybox(skyboxShader, faces);
+
     // load and attach model/light textures
-    Model* ourModel = new Model(workingDir + "/" + "resources/model/backpack/backpack.obj", ourShader, modelMatrices);
-    Cube lightCube(cubeShader, workingDir + "/" + "resources/redstone_lamp_on.png");
+    Model* ourModel = new Model(workingDir + "/" + "resources/model/backpack/backpack.obj", ourShader, model_ModelMatrices);
+    Cube lightCube(cubeShader, workingDir + "/" + "resources/redstone_lamp_on.png", cube_ModelMatrices);
+    Plane floor(planeShader, workingDir + "/" + "resources/floor.jpg", floor_ModelMatrix);
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
@@ -146,6 +163,10 @@ int main(void)
         cubeShader.addUniformMat4("projection", projection);
         cubeShader.unbind();
 
+        planeShader.bind();
+        planeShader.addUniformMat4("projection", projection);
+        planeShader.unbind();
+
         glm::mat4 view = camera.GetViewMatrix();
 
         // render
@@ -157,26 +178,24 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
         glEnable(GL_DEPTH_TEST);
-        //render lights
-        glm::mat4 lightModel = glm::mat4(1.0f);
 
+        //render lights
         cubeShader.bind();
         cubeShader.addUniformMat4("view", view);
-
-        for (int i = 0; i < numPointLights; i++) {
-            lightModel = glm::mat4(1.0f);
-            lightModel = glm::scale(lightModel, glm::vec3(0.5f));
-
-            lightModel = glm::translate(lightModel, pointLightPositions[i]);
-            cubeShader.addUniformMat4("model", lightModel);
-            lightCube.Draw(cubeShader);
-        }
         cubeShader.unbind();
 
-        
+        lightCube.Draw(cubeShader);
+
+        // render floor
+        planeShader.bind();
+        planeShader.addUniformMat4("view", view);
+        planeShader.unbind();
+
+        floor.Draw(planeShader);
+
+        // render model
         if (ourModel) {
             ourShader.bind();
-            // render model
             ourShader.addUniformMat4("projection", projection);
             ourShader.addUniformMat4("view", view);
             ourShader.addUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
@@ -184,7 +203,8 @@ int main(void)
 
             ourModel->Draw(ourShader);
         }
-        
+
+        //  render skybox
         skybox.Draw(view);
 
         /* Swap front and back buffers */

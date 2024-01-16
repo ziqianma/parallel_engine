@@ -18,7 +18,7 @@ public:
 	Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<std::string>& texturePaths, unsigned int numVerts, unsigned int numInstances);
 	~Mesh();
 	void Draw(const Shader& shader);
-	void setupOffsets();
+	void BindMeshVAO() { glBindVertexArray(VAO); };
 private:
 	unsigned int VAO, VBO, EBO;
 	std::vector<int> m_TextureIDs;

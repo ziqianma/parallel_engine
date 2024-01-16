@@ -6,7 +6,7 @@
 
 class Light {
 public:
-	Light(const Shader &shader, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular) :
+	Light(const std::vector<Shader> &shaders, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular) :
 		m_Ambient(ambient),
 		m_Diffuse(diffuse),
 		m_Specular(specular) 
@@ -21,12 +21,14 @@ protected:
   
 class DirLight : public Light {
 public:
-	DirLight(const Shader& shader, glm::vec3 direction, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, const std::string& name) :
-		Light(shader, ambient, diffuse, specular),
+	DirLight(const std::vector<Shader>& shaders, glm::vec3 direction, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, const std::string& name) :
+		Light(shaders, ambient, diffuse, specular),
 		m_Direction(direction),
 		m_Name(name)
 	{
-		setupLight(shader);
+		for (const Shader& shader : shaders) {
+			setupLight(shader);
+		}
 	}
 private:
 	std::string m_Name;
@@ -37,12 +39,14 @@ private:
 
 class PointLight : public Light {
 public:
-	PointLight(const Shader& shader, unsigned int shaderIndex, glm::vec3 position, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular) :
-		Light(shader, ambient, diffuse, specular),
+	PointLight(const std::vector<Shader>& shaders, unsigned int shaderIndex, glm::vec3 position, glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular) :
+		Light(shaders, ambient, diffuse, specular),
 		m_Position(position),
 		m_ShaderIndex(shaderIndex)
 	{
-		setupLight(shader);
+		for (const Shader& shader : shaders) {
+			setupLight(shader);
+		}
 	}
 
 	void setupLight(const Shader & shader) const override;

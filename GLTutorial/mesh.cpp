@@ -54,28 +54,6 @@ void Mesh::setupMesh(const std::vector<Vertex>& vertices, const std::vector<unsi
 	glBindVertexArray(0);
 }
 
-void Mesh::setupOffsets() {
-	// Bind vertex attributes to VAO
-	glBindVertexArray(VAO);
-
-	// per mesh instacing vertex attribs
-	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(glm::vec4), (void*)0);
-	glEnableVertexAttribArray(4);
-	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(glm::vec4), (void*)(1 * sizeof(glm::vec4)));
-	glEnableVertexAttribArray(5);
-	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(glm::vec4), (void*)(2 * sizeof(glm::vec4)));
-	glEnableVertexAttribArray(6);
-	glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(glm::vec4), (void*)(3 * sizeof(glm::vec4)));
-
-	glVertexAttribDivisor(3, 1);
-	glVertexAttribDivisor(4, 1);
-	glVertexAttribDivisor(5, 1);
-	glVertexAttribDivisor(6, 1);
-
-	glBindVertexArray(0);
-}
-
 void Mesh::Draw(const Shader& shader) {
 	for (int i = 0; i < m_TextureIDs.size(); i++) {
 		glActiveTexture(GL_TEXTURE0 + m_TextureUnits[i]);
