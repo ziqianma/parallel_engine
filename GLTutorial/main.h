@@ -13,16 +13,10 @@
 #include <memory>
 #include <future>
 
-glm::vec3 modelPositions[] = {
-    glm::vec3(2.5f, -3.3f, 4.0f),
-    glm::vec3(-2.0f, 2.0f, 10.0f),
-    glm::vec3(-5.0f,  0.0f, 3.0f),
-    glm::vec3(-1.5f, -3.3f, 3.0f),
-    glm::vec3(-2.0f, -2.0f, 6.0f),
-    glm::vec3(4.0f,  0.0f, -3.0f),
-    glm::vec3(-2.5f, -3.3f, 4.0f),
-    glm::vec3(-2.0f, 2.0f, 12.0f),
-    glm::vec3(3.5f,  0.0f, 2.0f)
+#define NUM_MODELS 1
+
+const static glm::vec3 MODEL_POSITIONS[NUM_MODELS] = {
+    glm::vec3(0.0f,-10.0f,0.0f)
 };
 
 float quadVertices[] = {

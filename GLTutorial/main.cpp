@@ -47,12 +47,12 @@ int main(void)
     std::cout << glGetString(GL_VERSION) << std::endl;
 
     // create shader
-    Shader ourShader = Shader::Shader("shaders/vertex.shader", "shaders/frag.shader");
+    Shader modelShader = Shader::Shader("shaders/vertex.shader", "shaders/frag.shader");
     Shader cubeShader = Shader::Shader("shaders/vertexCube.shader", "shaders/fragCube.shader");
     Shader skyboxShader = Shader::Shader("shaders/skyboxVertex.shader", "shaders/skyboxFrag.shader");
     Shader planeShader = Shader::Shader("shaders/vertexPlane.shader", "shaders/fragPlane.shader");
 
-    DirLight sun(std::vector<Shader>({ourShader,planeShader}), glm::vec3(0.0f, -1.0f, 0.0), glm::vec3(.0f), glm::vec3(.1f, .1f, .1f), glm::vec3(.0f), "sun");
+    DirLight sun(std::vector<Shader>({modelShader,planeShader}), glm::vec3(0.0f, -1.0f, 0.0), glm::vec3(.0f), glm::vec3(.1f, .1f, .1f), glm::vec3(.0f), "sun");
 
     glm::vec3 pointLightAmbient(.1f);       
     glm::vec3 pointLightDiffuse(.4f);
@@ -61,9 +61,9 @@ int main(void)
     std::vector<glm::mat4> cube_ModelMatrices;
     int numPointLights = 10;
 
-    ourShader.bind();
-    ourShader.addUniform1i("numPointLights", numPointLights);
-    ourShader.unbind();
+    modelShader.bind();
+    modelShader.addUniform1i("numPointLights", numPointLights);
+    modelShader.unbind();
 
     planeShader.bind();
     planeShader.addUniform1i("numPointLights", numPointLights);
@@ -89,8 +89,6 @@ int main(void)
         float z = cos(angle) * radius + displacement;
         model = glm::translate(model, glm::vec3(x, y, z));
 
-        pointLights.emplace_back(std::vector<Shader>({ ourShader,planeShader }), i, glm::vec3(x, y, z), pointLightAmbient, pointLightDiffuse, pointLightSpecular);
-
         // 2. scale: scale between 0.05 and 0.25f
         float scale = (rand() % 20) / 100.0f + 0.05;
         model = glm::scale(model, glm::vec3(scale));
@@ -101,27 +99,32 @@ int main(void)
 
         // 4. now add to list of matrices
         cube_ModelMatrices.push_back(model);
+
+        // setup light locations to be where cubes are rendered
+        pointLights.emplace_back(std::vector<Shader>({ modelShader,planeShader }), i, glm::vec3(x, y, z), pointLightAmbient, pointLightDiffuse, pointLightSpecular);
     }
 
     std::vector<glm::mat4> model_ModelMatrices;
-    for (int i = 0; i < 9; i++) {
+    for (int i = 0; i < NUM_MODELS; i++) {
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::scale(model, glm::vec3(0.5f));
-        model = glm::translate(model, modelPositions[i]);
+        model = glm::translate(model, MODEL_POSITIONS[i]);
         model_ModelMatrices.push_back(model);
     }
 
     glm::mat4 floor_ModelMatrix = glm::mat4(1.0f);
     floor_ModelMatrix = glm::translate(floor_ModelMatrix, glm::vec3(0.0f,-5.0f,0.0f));
-    floor_ModelMatrix = glm::scale(floor_ModelMatrix, glm::vec3(10.0f));
+    floor_ModelMatrix = glm::scale(floor_ModelMatrix, glm::vec3(20.0f));
 
+    // Create skybox
     Skybox skybox(skyboxShader, faces);
 
-    // load and attach model/light textures
-    Model* ourModel = new Model(workingDir + "/" + "resources/model/backpack/backpack.obj", ourShader, model_ModelMatrices);
+    // Create other game objs
+    Model* ourModel = new Model(workingDir + "/" + "resources/model/dragon/dragon.obj", modelShader, model_ModelMatrices);
     Cube lightCube(cubeShader, workingDir + "/" + "resources/redstone_lamp_on.png", cube_ModelMatrices);
-    Plane floor(planeShader, workingDir + "/" + "resources/floor.jpg", floor_ModelMatrix);
+    Plane floor(planeShader, workingDir + "/" + "resources/floor2.jpg", floor_ModelMatrix);
 
+    float angle = 0;
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
@@ -195,13 +198,18 @@ int main(void)
 
         // render model
         if (ourModel) {
-            ourShader.bind();
-            ourShader.addUniformMat4("projection", projection);
-            ourShader.addUniformMat4("view", view);
-            ourShader.addUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
-            ourShader.unbind();
+            modelShader.bind();
+            glm::mat4 model = glm::mat4(1.0f);
+            angle += 0.1*dt;
+            model = glm::rotate(model, angle, glm::vec3(0.0f, 1.0f, 0.0f));
+            modelShader.addUniformMat4("model", model);
 
-            ourModel->Draw(ourShader);
+            modelShader.addUniformMat4("projection", projection);
+            modelShader.addUniformMat4("view", view);
+            modelShader.addUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
+            modelShader.unbind();
+
+            ourModel->Draw(modelShader);
         }
 
         //  render skybox

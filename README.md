@@ -35,14 +35,13 @@ Phong lighting demo (Lighting)
 Lighting maps (diffuse, specular textures)
 </div>
 <div>
-<img src="model_load.gif" width="250" height="200"/>
-Model loading, rendering and stencil buffer showcase
-</div>
-<div>
 <img src="reflect_skybox.gif" width="250" height="200"/>
 Skybox (cubemap texture) + environment mapping demo (environment reflection)
 </div>
 <div>
 <img src="demo1.png" width="800" height="550"/>
 Game object instancing (models, lights, primitives, etc..)
+</div>
+<div>
+<img src="demo3.png" width="800" height="550"/>
 </div>
