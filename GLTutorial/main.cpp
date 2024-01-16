@@ -11,6 +11,7 @@ bool firstMouse = true;
 // timing
 float dt = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
+int frameCount = 0;
 
 int main(void)
 {
@@ -32,6 +33,7 @@ int main(void)
 
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
+    glfwSwapInterval(0);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
@@ -68,8 +70,39 @@ int main(void)
 
     Skybox skybox(skyboxShader, faces); 
 
+    std::vector<glm::mat4> modelMatrices;
+
+    unsigned int amount = 500;
+    srand(glfwGetTime()); // initialize random seed	
+    float radius = 10.0;
+    float offset = 2.5f;
+    for (unsigned int i = 0; i < amount; i++)
+    {
+        glm::mat4 model = glm::mat4(1.0f);
+        // 1. translation: displace along circle with 'radius' in range [-offset, offset]
+        float angle = (float)i / (float)amount * 360.0f;
+        float displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
+        float x = sin(angle) * radius + displacement;
+        displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
+        float y = displacement * 0.4f; // keep height of field smaller compared to width of x and z
+        displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
+        float z = cos(angle) * radius + displacement;
+        model = glm::translate(model, glm::vec3(x, y, z));
+
+        // 2. scale: scale between 0.05 and 0.25f
+        float scale = (rand() % 20) / 100.0f + 0.05;
+        model = glm::scale(model, glm::vec3(scale));
+
+        // 3. rotation: add random rotation around a (semi)randomly picked rotation axis vector
+        float rotAngle = (rand() % 360);
+        model = glm::rotate(model, rotAngle, glm::vec3(0.4f, 0.6f, 0.8f));
+
+        // 4. now add to list of matrices
+        modelMatrices.push_back(model);
+    }
+
     // load and attach model/light textures
-    Model* ourModel = new Model(workingDir + "/" + "resources/model/backpack/backpack.obj", ourShader);
+    Model* ourModel = new Model(workingDir + "/" + "resources/model/backpack/backpack.obj", ourShader, modelMatrices);
     Cube lightCube(cubeShader, workingDir + "/" + "resources/redstone_lamp_on.png");
 
     /* Loop until the user closes the window */
@@ -78,6 +111,12 @@ int main(void)
         float currentFrame = static_cast<float>(glfwGetTime());
         dt = currentFrame - lastFrame;
         lastFrame = currentFrame;
+        frameCount++;
+        if (frameCount > 500) {
+            std::cout << "FPS: " << 1 / dt << std::endl;
+            frameCount = 0;
+        }
+        
 
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
@@ -99,14 +138,10 @@ int main(void)
 
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 
-        ourShader.bind();
-        ourShader.addUniformMat4("projection", projection);
-        ourShader.unbind();
-
         skyboxShader.bind();
         skyboxShader.addUniformMat4("projection", projection);
         skyboxShader.unbind();
-
+                
         cubeShader.bind();
         cubeShader.addUniformMat4("projection", projection);
         cubeShader.unbind();
@@ -138,25 +173,18 @@ int main(void)
         }
         cubeShader.unbind();
 
-        // render model
-        ourShader.bind();
-        ourShader.addUniformMat4("view", view);
-        ourShader.addUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
-        ourShader.unbind();
-
         
         if (ourModel) {
             ourShader.bind();
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-            model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-            ourShader.addUniformMat4("model", model);
+            // render model
+            ourShader.addUniformMat4("projection", projection);
+            ourShader.addUniformMat4("view", view);
+            ourShader.addUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
             ourShader.unbind();
 
             ourModel->Draw(ourShader);
         }
         
-
         skybox.Draw(view);
 
         /* Swap front and back buffers */

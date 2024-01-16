@@ -1,8 +1,18 @@
 #include "model.h"
 
-Model::Model(const std::string& path, const Shader& shader) : m_Shader(shader) {
+Model::Model(const std::string& path, const Shader& shader, const std::vector<glm::mat4>& modelMatrices) : m_Shader(shader) {
 	m_Directory = path.substr(0, path.find_last_of("/"));
+	m_NumInstances = modelMatrices.size();
+
 	loadModel(path);
+
+	glGenBuffers(1, &m_InstanceVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, m_InstanceVBO);
+	glBufferData(GL_ARRAY_BUFFER, modelMatrices.size() * sizeof(glm::mat4), &modelMatrices[0], GL_STATIC_DRAW);
+
+	for (Mesh& m : m_Meshes) {
+		m.setupOffsets();
+	}
 }
 
 void Model::loadModel(const std::string& path) {
@@ -93,7 +103,7 @@ void Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 		loadMaterialTextures(texturePaths, material, aiTextureType::aiTextureType_HEIGHT, "texture_bump");
 	}
 
-	m_Meshes.emplace_back(vertices, indices, texturePaths, numVerts);
+	m_Meshes.emplace_back(vertices, indices, texturePaths, numVerts, m_NumInstances);
 }
 
 void Model::loadMaterialTextures(std::vector<std::string>& texturePaths, aiMaterial* mat, aiTextureType type, const std::string& typeName) {

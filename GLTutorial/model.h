@@ -10,12 +10,14 @@
 
 class Model {
 public:
-	Model(const std::string& path, const Shader& shader);
+	Model(const std::string& path, const Shader& shader, const std::vector<glm::mat4>& modelMatrices);
 	void Draw(const Shader& shader);
 private:
 	std::vector<Mesh> m_Meshes;
 	std::string m_Directory;
 	Shader m_Shader;
+	unsigned int m_NumInstances;
+	unsigned int m_InstanceVBO;
 
 	void loadModel(const std::string& path);
 	void processNode(aiNode* node, const aiScene* scene);

@@ -42,3 +42,7 @@ Model loading, rendering and stencil buffer showcase
 <img src="reflect_skybox.gif" width="250" height="200"/>
 Skybox (cubemap texture) + environment mapping demo (environment reflection)
 </div>
+<div>
+<img src="demo1.png" width="800" height="550"/>
+Game object instancing (models, lights, primitives, etc..)
+</div>

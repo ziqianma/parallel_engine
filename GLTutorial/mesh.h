@@ -15,9 +15,10 @@ struct Vertex {
 
 class Mesh {
 public:
-	Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<std::string>& texturePaths, unsigned int numVerts);
+	Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<std::string>& texturePaths, unsigned int numVerts, unsigned int numInstances);
 	~Mesh();
 	void Draw(const Shader& shader);
+	void setupOffsets();
 private:
 	unsigned int VAO, VBO, EBO;
 	std::vector<int> m_TextureIDs;
@@ -25,6 +26,7 @@ private:
 	std::vector<int> m_TextureUnits;
 
 	unsigned int m_NumVerts;
+	unsigned int m_NumInstances;
 
 	void setupMesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices);
 };
