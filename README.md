@@ -43,5 +43,5 @@ Skybox (cubemap texture) + environment mapping demo (environment reflection)
 Game object instancing (models, lights, primitives, etc..)
 </div>
 <div>
-<img src="demo3.png" width="800" height="550"/>
+<img src="demo3.gif" width="800" height="550"/>
 </div>
