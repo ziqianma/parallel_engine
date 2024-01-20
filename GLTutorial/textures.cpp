@@ -18,6 +18,10 @@ Texture::~Texture() {
 	glDeleteTextures(1, &texID);
 }
 
+TextureData::~TextureData() {
+	stbi_image_free(data);
+}
+
 void TextureLoader::DeleteTexture(const std::string& path) {
 	// delete from loaded textures map, free up texture unit for use.
 
@@ -52,7 +56,7 @@ void TextureLoader::LoadData(const std::string& path, int id)
 void TextureLoader::Update() 
 {
 	while (!s_ProcessingQueue.empty()) {
-		TextureData toLoad = s_ProcessingQueue.front();
+		TextureData& toLoad = s_ProcessingQueue.front();
 
 		int nrComponents = toLoad.nrComponents;
 		int width = toLoad.width;
@@ -89,13 +93,11 @@ void TextureLoader::Update()
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-			stbi_image_free(data);
 			std::cout << "Loaded: " << toLoad.path << std::endl << "(width, height) : (" << width << ", " << height << "), Texture ID: " << toLoad.id << std::endl;
 		}
 		else
 		{
 			std::cout << "Texture failed to load at path: " << toLoad.path << std::endl;
-			stbi_image_free(data);
 		}
 		s_ProcessingQueue.pop();
 	}

@@ -1,25 +1,26 @@
 #include "model.h"
 
-Model::Model(const std::string& path, const Shader& shader, const std::vector<glm::mat4>& modelMatrices) : m_Shader(shader) {
-	m_Directory = path.substr(0, path.find_last_of("/"));
-	m_NumInstances = modelMatrices.size();
-
+Model::Model(const std::string& path, const Shader& shader, const std::vector<glm::mat4>& modelMatrices) : 
+	m_Shader(shader),
+	m_Directory(path.substr(0, path.find_last_of("/"))),
+	m_NumInstances(modelMatrices.size())
+{
 	loadModel(path);
 	loadInstanceData(modelMatrices);
 
-	// add a default model matrix initially.
+	// TEMPORARY: add a default model matrix initially.
 	shader.bind();
 	shader.addUniformMat4("model", glm::mat4(1.0f));
 	shader.unbind();
 }
 
-void Model::loadInstanceData(const std::vector<glm::mat4>& modelMatrices) {
-
+void Model::loadInstanceData(const std::vector<glm::mat4>& modelMatrices) 
+{
 	glGenBuffers(1, &m_InstanceVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, m_InstanceVBO);
 	glBufferData(GL_ARRAY_BUFFER, modelMatrices.size() * sizeof(glm::mat4), &modelMatrices[0], GL_STATIC_DRAW);
 
-	for (Mesh& m : m_Meshes) {
+	for (const Mesh& m : m_Meshes) {
 		// Bind vertex attributes to VAO
 		m.BindMeshVAO();
 
@@ -38,11 +39,13 @@ void Model::loadInstanceData(const std::vector<glm::mat4>& modelMatrices) {
 		glVertexAttribDivisor(5, 1);
 		glVertexAttribDivisor(6, 1);
 
+		// Unbind Mesh VAO
 		glBindVertexArray(0);
 	}
 }
 
-void Model::loadModel(const std::string& path) {
+void Model::loadModel(const std::string& path) 
+{
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);		
 
@@ -50,11 +53,11 @@ void Model::loadModel(const std::string& path) {
 		std::cout << "ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
 		return;
 	}
-	m_Directory = path.substr(0, path.find_last_of("/"));
 	processNode(scene->mRootNode, scene);
 }	
 
-void Model::processNode(aiNode* node, const aiScene* scene) {
+void Model::processNode(aiNode* node, const aiScene* scene) 
+{
 
 	// node->mMeshes contain indicies of meshes inside scene->mMeshes
 	// scene->mMeshes contains meshes which make up the entire model.
@@ -75,7 +78,8 @@ void Model::processNode(aiNode* node, const aiScene* scene) {
 
 }
 
-void Model::processMesh(aiMesh* mesh, const aiScene* scene) {
+void Model::processMesh(aiMesh* mesh, const aiScene* scene) 
+{
 
 	//Vertex* vertices = new Vertex[numVerts];
 	//unsigned int* indices = new unsigned int[numVerts];
@@ -133,7 +137,8 @@ void Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 	m_Meshes.emplace_back(vertices, indices, texturePaths, numVerts, m_NumInstances);
 }
 
-void Model::loadMaterialTextures(std::vector<std::string>& texturePaths, aiMaterial* mat, aiTextureType type, const std::string& typeName) {
+void Model::loadMaterialTextures(std::vector<std::string>& texturePaths, aiMaterial* mat, aiTextureType type, const std::string& typeName) 
+{
 	aiColor3D ambient, diffuse, specular;
 	mat->Get(AI_MATKEY_COLOR_AMBIENT, ambient);
 	mat->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse);

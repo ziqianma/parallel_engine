@@ -31,5 +31,4 @@ private:
 
     void setupPlaneMesh();
     void loadPlaneTexture(const Shader& shader, const std::string& texturePath);
-    void setupInstances(const std::vector<glm::mat4> modelMatrices);
 };

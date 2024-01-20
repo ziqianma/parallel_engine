@@ -13,3 +13,29 @@
 
 #include "timer.h"
 
+namespace game_constants {
+    inline constexpr float QUAD_VERTICES[] = 
+    {
+        // positions   // texCoords
+        -1.0f,  1.0f,  0.0f, 1.0f,
+        -1.0f, -1.0f,  0.0f, 0.0f,
+         1.0f, -1.0f,  1.0f, 0.0f,
+
+        -1.0f,  1.0f,  0.0f, 1.0f,
+         1.0f, -1.0f,  1.0f, 0.0f,
+         1.0f,  1.0f,  1.0f, 1.0f
+    };
+
+    inline const std::vector<std::string> SKYBOX_FACES
+    {
+        "right.jpg",
+        "left.jpg",
+        "top.jpg",
+        "bottom.jpg",
+        "front.jpg",
+        "back.jpg"
+    };
+
+    inline constexpr unsigned int SCR_WIDTH = 1920;
+    inline constexpr unsigned int SCR_HEIGHT = 1080;
+}

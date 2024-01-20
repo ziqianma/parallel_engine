@@ -29,6 +29,7 @@ struct TextureData {
 	unsigned char* data;
 
 	TextureData(int id, const std::string& path, int width, int height, int nrComponents, unsigned char* data) : id(id), path(path), width(width), height(height), nrComponents(nrComponents), data(data) {}
+	~TextureData();
 };
 
 #define ASYNC 1

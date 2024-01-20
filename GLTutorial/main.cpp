@@ -1,18 +1,6 @@
 #include "main.h"
 #include <stb_image.h>
 
-std::string workingDir = std::filesystem::current_path().generic_string();
-
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
-float lastX = SCR_WIDTH / 2.0f;
-float lastY = SCR_HEIGHT / 2.0f;
-bool firstMouse = true;
-
-// timing
-float dt = 0.0f;	// time between current frame and last frame
-float lastFrame = 0.0f;
-int frameCount = 0;
-
 int main(void)
 {
     /* Initialize the library */
@@ -20,7 +8,7 @@ int main(void)
         return -1;
 
     /* Create a windowed mode window and its OpenGL context */
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Learn", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(game_constants::SCR_WIDTH, game_constants::SCR_HEIGHT, "Learn", NULL, NULL);
 
     if (!window)
     {
@@ -52,14 +40,14 @@ int main(void)
     Shader skyboxShader = Shader::Shader("shaders/skyboxVertex.shader", "shaders/skyboxFrag.shader");
     Shader planeShader = Shader::Shader("shaders/vertexPlane.shader", "shaders/fragPlane.shader");
 
-    DirLight sun(std::vector<Shader>({modelShader,planeShader}), glm::vec3(0.0f, -1.0f, 0.0), glm::vec3(.0f), glm::vec3(.1f, .1f, .1f), glm::vec3(.0f), "sun");
+    DirLight sun(std::vector<Shader>({modelShader,planeShader}), glm::vec3(0.0f, -1.0f, 0.0), glm::vec3(.0f), glm::vec3(.0f, .0f, .0f), glm::vec3(.0f), "sun");
 
     glm::vec3 pointLightAmbient(.1f);       
-    glm::vec3 pointLightDiffuse(.4f);
+    glm::vec3 pointLightDiffuse(.4f,.0f,.0f);
     glm::vec3 pointLightSpecular(1.0f);
 
     std::vector<glm::mat4> cube_ModelMatrices;
-    int numPointLights = 10;
+    int numPointLights = 20;
 
     modelShader.bind();
     modelShader.addUniform1i("numPointLights", numPointLights);
@@ -117,14 +105,20 @@ int main(void)
     floor_ModelMatrix = glm::scale(floor_ModelMatrix, glm::vec3(20.0f));
 
     // Create skybox
-    Skybox skybox(skyboxShader, faces);
+    Skybox skybox(skyboxShader, game_constants::SKYBOX_FACES);
 
     // Create other game objs
-    Model* ourModel = new Model(workingDir + "/" + "resources/model/dragon/dragon.obj", modelShader, model_ModelMatrices);
-    Cube lightCube(cubeShader, workingDir + "/" + "resources/redstone_lamp_on.png", cube_ModelMatrices);
-    Plane floor(planeShader, workingDir + "/" + "resources/floor2.jpg", floor_ModelMatrix);
+    Model* ourModel = new Model(WORKING_DIR + "/" + "resources/model/dragon/dragon.obj", modelShader, model_ModelMatrices);
+    Cube lightCube(cubeShader, WORKING_DIR + "/" + "resources/redstone_lamp_on.png", cube_ModelMatrices);
+    Plane floor(planeShader, WORKING_DIR + "/" + "resources/floor2.jpg", floor_ModelMatrix);
 
     float angle = 0;
+
+    // timing
+    float dt = 0.0f;	// time between current frame and last frame
+    float lastFrame = 0.0f;
+    int frameCount = 0;
+
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
@@ -156,7 +150,7 @@ int main(void)
         }
         
 
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)game_constants::SCR_WIDTH / (float)game_constants::SCR_HEIGHT, 0.1f, 100.0f);
 
         skyboxShader.bind();
         skyboxShader.addUniformMat4("projection", projection);
@@ -201,7 +195,7 @@ int main(void)
             modelShader.bind();
             glm::mat4 model = glm::mat4(1.0f);
             angle += 0.1*dt;
-            model = glm::rotate(model, angle, glm::vec3(0.0f, 1.0f, 0.0f));
+            model = glm::rotate(model, angle, glm::vec3 (0.0f, 1.0f, 0.0f));
             modelShader.addUniformMat4("model", model);
 
             modelShader.addUniformMat4("projection", projection);

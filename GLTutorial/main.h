@@ -15,34 +15,18 @@
 
 #define NUM_MODELS 1
 
-const static glm::vec3 MODEL_POSITIONS[NUM_MODELS] = {
+inline constexpr glm::vec3 MODEL_POSITIONS[NUM_MODELS] = {
     glm::vec3(0.0f,-10.0f,0.0f)
 };
 
-float quadVertices[] = {
-    // positions   // texCoords
-    -1.0f,  1.0f,  0.0f, 1.0f,
-    -1.0f, -1.0f,  0.0f, 0.0f,
-     1.0f, -1.0f,  1.0f, 0.0f,
+inline Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 
-    -1.0f,  1.0f,  0.0f, 1.0f,
-     1.0f, -1.0f,  1.0f, 0.0f,
-     1.0f,  1.0f,  1.0f, 1.0f
-};
+inline float lastX = game_constants::SCR_WIDTH / 2.0f;
+inline float lastY = game_constants::SCR_HEIGHT / 2.0f;
+inline bool firstMouse = true;
 
-std::vector<std::string> faces
-{
-    "right.jpg",
-    "left.jpg",
-    "top.jpg",
-    "bottom.jpg",
-    "front.jpg",
-    "back.jpg"
-};
+inline const std::string WORKING_DIR = std::filesystem::current_path().generic_string();
 
-static const unsigned int SCR_WIDTH = 1920;
-static const unsigned int SCR_HEIGHT = 1080;
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset); 
+inline void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+inline void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+inline void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
