@@ -4,14 +4,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-std::vector<std::future<void>> TextureLoader::s_Futures;
-
-std::unordered_map<std::string, std::unique_ptr<Texture>> TextureLoader::s_LoadedTextures;
-std::queue<TextureData> TextureLoader::s_ProcessingQueue;
-std::queue<unsigned int> TextureLoader::s_AvailableTextureUnits;
-
-static std::mutex s_imageMutex;
-
 Texture::~Texture() {
 	// deallocate texture from gl context
 	unsigned int texID = id;
@@ -25,7 +17,7 @@ TextureData::~TextureData() {
 void TextureLoader::DeleteTexture(const std::string& path) {
 	// delete from loaded textures map, free up texture unit for use.
 
-	// move unqiue_ptr from static map to this unique ptr
+	// move unqiue_ptr from static map to this unique ptr (hold reference)
 	std::unique_ptr<Texture> texturePtr = std::move(s_LoadedTextures[path]);
 
 	// delete map ref to now hollow unqiue_ptr
@@ -33,7 +25,7 @@ void TextureLoader::DeleteTexture(const std::string& path) {
 		s_LoadedTextures.erase(path);
 
 		// get texture unit and add back onto available unit stack
-		s_AvailableTextureUnits.push(texturePtr->texUnit);
+		s_AvailableTextureUnits[texturePtr->texUnit] = 1;
 
 		// delete unique_ptr
 		texturePtr.reset();
@@ -47,9 +39,8 @@ const Texture& TextureLoader::GetTexture(const std::string& path) {
 void TextureLoader::LoadData(const std::string& path, int id) 
 {
 	int width = 0, height = 0, nrComponents = 0;
-	std::lock_guard<std::mutex> lock(s_imageMutex);
 	unsigned char* data = stbi_load(path.c_str(), &width, &height, &nrComponents, 0);
-	
+	std::lock_guard<std::mutex> lock(s_ImageMutex);
 	s_ProcessingQueue.emplace(id, path, width, height, nrComponents, data);
 }
 
@@ -109,9 +100,7 @@ void TextureLoader::LoadTexture(const std::string& path, const std::string &type
 	// if the loadedTextures map is empty, we can init the available texture units
 	// if its empty due to all textures being cleared, its still ok to reset the list
 	if (s_LoadedTextures.empty()) {
-		for (int i = 0; i < MAX_AVAILABLE_TEXTURE_UNITS; i++) {
-			s_AvailableTextureUnits.push(i);
-		}
+		s_AvailableTextureUnits.fill(1);
 	}
 
 	// check if currently requested texture has already been "loaded", if so, don't do anything.
@@ -125,9 +114,17 @@ void TextureLoader::LoadTexture(const std::string& path, const std::string &type
 	unsigned int textureID;
 	glGenTextures(1, &textureID);
 
-	// If a texture is being initialized for the first time, pop an avaialble texture unit off the queue and assign
-	unsigned int textureUnit = s_AvailableTextureUnits.front();
-	s_AvailableTextureUnits.pop();
+	// If a texture is being initialized for the first time, set that texture unit "unavaialble" and assign
+
+
+	unsigned int textureUnit;
+	for (int i = 0; i < MAX_AVAILABLE_TEXTURE_UNITS; i++) {
+		if (s_AvailableTextureUnits[i] == 1) {
+			textureUnit = i;
+			s_AvailableTextureUnits[i] = 0;
+			break;
+		}
+	}
 
 	// push uniquely managed texture pointer into loaded texture map.
 	s_LoadedTextures[path] = std::make_unique<Texture>(textureID, typeName, textureUnit);
@@ -139,12 +136,10 @@ void TextureLoader::LoadTexture(const std::string& path, const std::string &type
 #endif
 }
 
-std::unique_ptr<Texture> TextureLoader::LoadSkyboxTexture(const std::string& path, const std::vector<std::string>& faceNames, const std::string& textureType) 
+std::unique_ptr<Texture> TextureLoader::LoadSkyboxTexture(const std::string& path, const std::string& textureType)
 {
 	if (s_LoadedTextures.empty()) {
-		for (int i = 0; i < MAX_AVAILABLE_TEXTURE_UNITS; i++) {
-			s_AvailableTextureUnits.push(i);
-		}
+		s_AvailableTextureUnits.fill(1);
 	}
 
 	unsigned int textureID;
@@ -153,9 +148,10 @@ std::unique_ptr<Texture> TextureLoader::LoadSkyboxTexture(const std::string& pat
 	// attach skybox texture
 	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
 	int width, height, nrChannels;
-	for (int i = 0; i < faceNames.size(); i++)
+	for (int i = 0; i < game_constants::NUM_SKYBOX_FACES; i++)
 	{
-		unsigned char* data = stbi_load((path + "/" + faceNames[i]).c_str(), &width, &height, &nrChannels, 0);
+		std::string finalPathName = path + "/" + game_constants::SKYBOX_FACES[i];
+		unsigned char* data = stbi_load(finalPathName.c_str(), &width, &height, &nrChannels, 0);
 		if (data)
 		{
 			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
@@ -165,7 +161,7 @@ std::unique_ptr<Texture> TextureLoader::LoadSkyboxTexture(const std::string& pat
 		}
 		else
 		{
-			std::cout << "Cubemap tex failed to load at path: " << path + "/" + faceNames[i] << std::endl;
+			std::cout << "Cubemap tex failed to load at path: " << path + "/" + game_constants::SKYBOX_FACES[i] << std::endl;
 			stbi_image_free(data);
 		}
 	}
@@ -175,8 +171,14 @@ std::unique_ptr<Texture> TextureLoader::LoadSkyboxTexture(const std::string& pat
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-	unsigned int textureUnit = s_AvailableTextureUnits.front();
-	s_AvailableTextureUnits.pop();
+	unsigned int textureUnit;
+	for (int i = 0; i < MAX_AVAILABLE_TEXTURE_UNITS; i++) {
+		if (s_AvailableTextureUnits[i] == 1) {
+			textureUnit = i;
+			s_AvailableTextureUnits[i] = 0;
+			break;
+		}
+	}
 
 	// move pointer ownership to skybox class
 	return std::make_unique<Texture>(textureID, textureType, textureUnit);

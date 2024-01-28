@@ -7,9 +7,9 @@
 
 class Skybox {
 public:
-	Skybox(const Shader& shader, const std::vector<std::string>& faces) : m_Shader(shader) {
+	Skybox(const Shader& shader) : m_Shader(shader) {
         stbi_set_flip_vertically_on_load(false);
-        m_Texture = TextureLoader::LoadSkyboxTexture("resources/skybox", faces, "texture_skybox");
+        m_Texture = TextureLoader::LoadSkyboxTexture("resources/skybox", "texture_skybox");
 		stbi_set_flip_vertically_on_load(true);
 
         shader.bind();

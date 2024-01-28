@@ -5,6 +5,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <array>
+#include <queue>
 #include <unordered_map>
 
 #include <glm/glm.hpp>
@@ -13,7 +15,7 @@
 
 #include "timer.h"
 
-namespace game_constants {
+inline namespace game_constants {
     inline constexpr float QUAD_VERTICES[] = 
     {
         // positions   // texCoords
@@ -26,7 +28,8 @@ namespace game_constants {
          1.0f,  1.0f,  1.0f, 1.0f
     };
 
-    inline const std::vector<std::string> SKYBOX_FACES
+    inline constexpr unsigned int NUM_SKYBOX_FACES = 6;
+    inline constexpr std::array<const char*, NUM_SKYBOX_FACES> SKYBOX_FACES(
     {
         "right.jpg",
         "left.jpg",
@@ -34,8 +37,11 @@ namespace game_constants {
         "bottom.jpg",
         "front.jpg",
         "back.jpg"
-    };
+    });
 
     inline constexpr unsigned int SCR_WIDTH = 1920;
     inline constexpr unsigned int SCR_HEIGHT = 1080;
+
+    inline constexpr const char* POINT_LIGHT_LIST_NAME = "pointLights";
+    inline constexpr const char* DIR_LIGHT_NAME = "sun";
 }

@@ -1,12 +1,10 @@
 #pragma once
 
 #include "mesh.h"
-#include <mutex>
-#include <future>
-#include <map>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <filesystem>
 
 /*
 * Model.h

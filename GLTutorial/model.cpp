@@ -148,6 +148,7 @@ void Model::loadMaterialTextures(std::vector<std::string>& texturePaths, aiMater
 	m_Shader.addUniform3f("material.ambient", ambient.r, ambient.g, ambient.b);
 	m_Shader.addUniform3f("material.diffuse", diffuse.r, diffuse.g, diffuse.b);
 	m_Shader.addUniform3f("material.specular", specular.r, specular.g, specular.b);
+	m_Shader.addUniform1f("material.shininess", 128.0f);
 	m_Shader.unbind();
 	
 	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++) {

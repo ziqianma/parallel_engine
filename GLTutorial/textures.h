@@ -8,7 +8,6 @@
 
 #include "common.h"
 #include <future>
-#include <queue>
 
 struct Texture {
 	int id;
@@ -41,13 +40,14 @@ public:
 
 	static void Update();
 
-	static std::unique_ptr<Texture> LoadSkyboxTexture(const std::string &path, const std::vector<std::string>& faceNames, const std::string& textureType);
+	static std::unique_ptr<Texture> LoadSkyboxTexture(const std::string &path, const std::string& textureType);
 private:
-	static std::vector<std::future<void>> s_Futures;
+	inline static std::vector<std::future<void>> s_Futures;
 
-	static std::unordered_map<std::string, std::unique_ptr<Texture>> s_LoadedTextures;
-	static std::queue<TextureData> s_ProcessingQueue;
-	static std::queue<unsigned int> s_AvailableTextureUnits;
+	inline static std::unordered_map<std::string, std::unique_ptr<Texture>> s_LoadedTextures;
+	inline static std::queue<TextureData> s_ProcessingQueue;
+	inline static std::array<unsigned int, MAX_AVAILABLE_TEXTURE_UNITS> s_AvailableTextureUnits;
+	inline static std::mutex s_ImageMutex;
 
 	static void LoadData(const std::string& path, int textureID);
 	static void TextureFromFile(unsigned int textureID, const std::string& path, bool gamma, const std::string& typeName);

@@ -13,20 +13,38 @@
 #include <memory>
 #include <future>
 
-#define NUM_MODELS 1
+constexpr unsigned int NUM_MODELS = 4;
 
-inline constexpr glm::vec3 MODEL_POSITIONS[NUM_MODELS] = {
-    glm::vec3(0.0f,-10.0f,0.0f)
+constexpr glm::vec3 MODEL_POSITIONS[NUM_MODELS] = {
+    glm::vec3(2.0f,3.0f,-1.0f),
+    glm::vec3(-2.0f,5.0f,2.0f),
+    glm::vec3(-5.0f,7.0f,3.0f),
+    glm::vec3(3.5f,-2.0f,5.0f)
 };
 
-inline Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+constexpr glm::vec3 SUN_LIGHT_DIR = glm::vec3(1.0f, -1.0f, 1.0f);
 
-inline float lastX = game_constants::SCR_WIDTH / 2.0f;
-inline float lastY = game_constants::SCR_HEIGHT / 2.0f;
-inline bool firstMouse = true;
+const LightData POINT_LIGHT_DATA(
+    glm::vec3(.0f),
+    glm::vec3(.4f, .0f, .0f),
+    glm::vec3(1.0f));
 
-inline const std::string WORKING_DIR = std::filesystem::current_path().generic_string();
+const LightData SUN_LIGHT_DATA(
+    glm::vec3(.3f),
+    glm::vec3(.0f),
+    glm::vec3(0.0f));
 
-inline void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-inline void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-inline void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+inline constexpr unsigned int NUM_POINT_LIGHTS = 5;
+
+const std::string WORKING_DIR = std::filesystem::current_path().generic_string();
+
+static Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+static float lastX = game_constants::SCR_WIDTH / 2.0f;
+static float lastY = game_constants::SCR_HEIGHT / 2.0f;
+static bool firstMouse = true;
+
+static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+static void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+
+static std::vector<glm::vec3> generatePositions(int numPointLights, std::vector<glm::mat4>& modelMatrices);

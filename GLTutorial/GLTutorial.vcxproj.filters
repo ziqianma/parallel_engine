@@ -48,6 +48,9 @@
     <ClCompile Include="plane.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="input_handler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\vertex.shader">
@@ -56,7 +59,7 @@
     <None Include="shaders\frag.shader">
       <Filter>Resource Files\shaders</Filter>
     </None>
-    <None Include="shaders\fragCube.shader">
+    <None Include="shaders\fragUnlit.shader">
       <Filter>Resource Files\shaders</Filter>
     </None>
     <None Include="shaders\vertexCube.shader">
@@ -69,7 +72,6 @@
       <Filter>Resource Files\shaders</Filter>
     </None>
     <None Include="shaders\vertexPlane.shader" />
-    <None Include="shaders\fragPlane.shader" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -103,6 +105,9 @@
       <Filter>Source Files\src</Filter>
     </ClInclude>
     <ClInclude Include="plane.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="input_handler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

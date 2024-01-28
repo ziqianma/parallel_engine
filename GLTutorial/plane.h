@@ -1,21 +1,20 @@
 #pragma once
 
-#include "common.h"
 #include "shader.h"
 #include "mesh.h"
+#include "common.h"
 #include "textures.h"
 
 static const float PLANE_VERTS[] = {
     // positions         // texCoords
     -1.0f, 0.0f, 1.0f,  0.0f, 20.0f, // top left 
-    -1.0f, 0.0f, -1.0f,  0.0f, 0.0f, // bottom left
      1.0f, 0.0f, -1.0f,  20.0f, 0.0f, // bottom right
+    -1.0f, 0.0f, -1.0f,  0.0f, 0.0f, // bottom left
 
     -1.0f, 0.0f, 1.0f,  0.0f, 20.0f, // top left
-     1.0f, 0.0f, -1.0f,  20.0f, 0.0f, // bottom right
-     1.0f, 0.0f, 1.0f,   20.0f, 20.0f // top right
+     1.0f, 0.0f, 1.0f,   20.0f, 20.0f, // top right
+     1.0f, 0.0f, -1.0f,  20.0f, 0.0f // bottom right
 };
-
 
 class Plane {
 public:
@@ -23,7 +22,6 @@ public:
     void Draw(const Shader& shader);
 private:
     unsigned int m_VAO, m_VBO;
-
     unsigned int m_InstanceVBO;
 
     int m_PlaneTextureID;
