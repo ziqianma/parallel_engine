@@ -31,7 +31,7 @@ Cube::Cube(const Shader& shader, const std::string& texturePath, const std::vect
 
 void Cube::loadCubeTexture(const Shader& shader, const std::string& texturePath) 
 {
-    TextureLoader::LoadTexture(texturePath, "texture_diffuse");
+    TextureLoader::LoadTexture(shader.get_shader_id(), texturePath, "texture_diffuse");
 
     const Texture& temp = TextureLoader::GetTexture(texturePath);
     m_CubeTextureID = temp.id;

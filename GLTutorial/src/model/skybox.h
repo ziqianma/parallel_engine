@@ -1,15 +1,15 @@
 #pragma once
 
 #include "common.h"
-#include "textures.h"
-#include "shader.h"
+#include "util/textures.h"
+#include "shader/shader.h"
 #include <stb_image.h>
 
 class Skybox {
 public:
 	Skybox(const Shader& shader) : m_Shader(shader) {
         stbi_set_flip_vertically_on_load(false);
-        m_Texture = TextureLoader::LoadSkyboxTexture("resources/skybox", "texture_skybox");
+        m_Texture = TextureLoader::LoadSkyboxTexture(shader.get_shader_id(), "resources/skybox", "texture_skybox");
 		stbi_set_flip_vertically_on_load(true);
 
         shader.bind();

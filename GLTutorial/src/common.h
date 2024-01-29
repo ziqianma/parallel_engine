@@ -13,20 +13,33 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "timer.h"
+#include "util/timer.h"
 
 inline namespace game_constants {
     inline constexpr float QUAD_VERTICES[] = 
     {
         // positions   // texCoords
-        -1.0f,  1.0f,  0.0f, 1.0f,
-        -1.0f, -1.0f,  0.0f, 0.0f,
-         1.0f, -1.0f,  1.0f, 0.0f,
+         0.0f,  1.0f,  0.0f, 1.0f, // top left
+         0.0f,  0.0f,  0.0f, 0.0f, // bottom left
+         1.0f,  0.0f,  1.0f, 0.0f, // botttom right
 
-        -1.0f,  1.0f,  0.0f, 1.0f,
-         1.0f, -1.0f,  1.0f, 0.0f,
-         1.0f,  1.0f,  1.0f, 1.0f
+         0.0f,  1.0f,  0.0f, 1.0f, // top left
+         1.0f,  0.0f,  1.0f, 0.0f, // botttom right
+         1.0f,  1.0f,  1.0f, 1.0f // top right
     };
+
+    inline constexpr float QUAD2_VERTICES[] =
+    {
+        // positions   // texCoords
+         -1.0f,  1.0f,  0.0f, 1.0f, // top left
+         -1.0f, 0.0f,  0.0f, 0.0f, // bottom left
+          0.0f, 0.0f,  1.0f, 0.0f, // botttom right
+
+         -1.0f,  1.0f,  0.0f, 1.0f, // top left
+          0.0f, 0.0f,  1.0f, 0.0f, // botttom right
+          0.0f,  1.0f,  1.0f, 1.0f // top right
+    };
+
 
     inline constexpr unsigned int NUM_SKYBOX_FACES = 6;
     inline constexpr std::array<const char*, NUM_SKYBOX_FACES> SKYBOX_FACES(

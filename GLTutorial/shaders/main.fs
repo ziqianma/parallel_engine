@@ -45,6 +45,7 @@ uniform vec3 viewPos;
 
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 vec3 CalcDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir);
+void gamma_correct(inout vec3 diffuse);
 
 void main()
 {
@@ -80,6 +81,11 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
     // combine results
     vec3 ambient = light.ambient * material.ambient * vec3(texture(material.texture_diffuse1, TexCoords));
     vec3 diffuse = light.diffuse * material.diffuse * diff * vec3(texture(material.texture_diffuse1, TexCoords));
+
+    // gamma correct diffuse
+    gamma_correct(diffuse);
+
+
     vec3 specular = light.specular * material.specular * spec * vec3(texture(material.texture_specular1, TexCoords));
 
     ambient *= attenuation;
@@ -101,7 +107,17 @@ vec3 CalcDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir)
     // combine results
     vec3 ambient = light.ambient * material.ambient * vec3(texture(material.texture_diffuse1, TexCoords));
     vec3 diffuse = light.diffuse * material.diffuse * diff * vec3(texture(material.texture_diffuse1, TexCoords));
+
+    // gamma correct diffuse
+    gamma_correct(diffuse);
+
     vec3 specular = light.specular * material.specular * spec * vec3(texture(material.texture_specular1, TexCoords));
 
     return (ambient + diffuse + specular);
+}
+
+void gamma_correct(inout vec3 diffuse)
+{
+    float gamma = 2.2f;
+    diffuse = pow(diffuse, vec3(1.0 / gamma));
 }

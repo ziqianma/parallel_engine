@@ -1,8 +1,8 @@
 #pragma once
 
 #include "common.h"
-#include "shader.h"
-#include "textures.h"
+#include "shader/shader.h"
+#include "util/textures.h"
 
 struct Vertex {
 	glm::vec3 position;
@@ -16,13 +16,11 @@ struct Vertex {
 class Mesh {
 public:
 	Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<std::string>& texturePaths, unsigned int numVerts, unsigned int numInstances);
-	~Mesh();
 	void Draw(const Shader& shader);
 	void BindMeshVAO() const { glBindVertexArray(VAO); };
 private:
 	unsigned int VAO, VBO, EBO;
 	std::vector<int> m_TextureIDs;
-	std::vector<std::string> m_TexturePaths;
 	std::vector<int> m_TextureUnits;
 
 	unsigned int m_NumVerts;

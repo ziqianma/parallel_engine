@@ -5,6 +5,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <filesystem>
+#include <unordered_set>
 
 /*
 * Model.h
@@ -18,9 +19,11 @@
 class Model {
 public:
 	Model(const std::string& path, const Shader& shader, const std::vector<glm::mat4>& modelMatrices);
+	~Model();
 	void Draw(const Shader& shader);
 private:
 	std::vector<Mesh> m_Meshes;
+	std::unordered_set<std::string> m_ModelTexturePaths;
 	std::string m_Directory;
 	Shader m_Shader;
 	unsigned int m_NumInstances;

@@ -75,7 +75,7 @@
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)dependencies\GLFW\include;$(SolutionDir)dependencies\GLEW\include;$(SolutionDir)dependencies\glm;$(SolutionDir)dependencies\Assimp\include;C:\Users\Andy Ma.DESKTOP-49718PJ\Desktop\GLTutorial\opengl_fun\dependencies\stb_image</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dependencies\GLFW\include;$(SolutionDir)dependencies\GLEW\include;$(SolutionDir)dependencies\glm;$(SolutionDir)dependencies\Assimp\include;$(SolutionDir)dependencies\stb_image;$(SolutionDir)GLTutorial\src\</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -93,7 +93,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)dependencies\GLFW\include;$(SolutionDir)dependencies\GLEW\include;$(SolutionDir)dependencies\glm;$(SolutionDir)dependencies\Assimp\include;C:\Users\Andy Ma.DESKTOP-49718PJ\Desktop\GLTutorial\opengl_fun\dependencies\stb_image</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dependencies\GLFW\include;$(SolutionDir)dependencies\GLEW\include;$(SolutionDir)dependencies\glm;$(SolutionDir)dependencies\Assimp\include;$(SolutionDir)dependencies\stb_image;$(SolutionDir)GLTutorial\src\</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -111,7 +111,7 @@
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)dependencies\GLFW\include;$(SolutionDir)dependencies\GLEW\include;$(SolutionDir)dependencies\glm;$(SolutionDir)dependencies\Assimp\include;C:\Users\Andy Ma.DESKTOP-49718PJ\Desktop\GLTutorial\opengl_fun\dependencies\stb_image</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dependencies\GLFW\include;$(SolutionDir)dependencies\GLEW\include;$(SolutionDir)dependencies\glm;$(SolutionDir)dependencies\Assimp\include;$(SolutionDir)dependencies\stb_image;$(SolutionDir)GLTutorial\src\</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -129,7 +129,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)dependencies\GLFW\include;$(SolutionDir)dependencies\GLEW\include;$(SolutionDir)dependencies\glm;$(SolutionDir)dependencies\Assimp\include;C:\Users\Andy Ma.DESKTOP-49718PJ\Desktop\GLTutorial\opengl_fun\dependencies\stb_image</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dependencies\GLFW\include;$(SolutionDir)dependencies\GLEW\include;$(SolutionDir)dependencies\glm;$(SolutionDir)dependencies\Assimp\include;$(SolutionDir)dependencies\stb_image;$(SolutionDir)GLTutorial\src\</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -143,39 +143,44 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="camera.h" />
-    <ClCompile Include="cube.cpp" />
-    <ClCompile Include="input_handler.cpp" />
-    <ClCompile Include="light.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="mesh.cpp" />
-    <ClCompile Include="model.cpp" />
-    <ClCompile Include="plane.cpp" />
-    <ClCompile Include="shader.cpp" />
-    <ClCompile Include="textures.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\model\cube.cpp" />
+    <ClCompile Include="src\model\mesh.cpp" />
+    <ClCompile Include="src\model\model.cpp" />
+    <ClCompile Include="src\model\plane.cpp" />
+    <ClCompile Include="src\shader\light.cpp" />
+    <ClCompile Include="src\shader\shader.cpp" />
+    <ClCompile Include="src\util\framebuffer.cpp" />
+    <ClCompile Include="src\util\input_handler.cpp" />
+    <ClCompile Include="src\util\textures.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\frag.shader" />
-    <None Include="shaders\fragUnlit.shader" />
-    <None Include="shaders\vertexPlane.shader" />
-    <None Include="shaders\skyboxFrag.shader" />
-    <None Include="shaders\skyboxVertex.shader" />
-    <None Include="shaders\vertex.shader" />
-    <None Include="shaders\vertexCube.shader" />
+    <None Include="assimp-vc143-mt.dll" />
+    <None Include="shaders\framebuffer.fs" />
+    <None Include="shaders\main.fs" />
+    <None Include="shaders\unlit.fs" />
+    <None Include="shaders\framebuffer.vs" />
+    <None Include="shaders\plane.vs" />
+    <None Include="shaders\skybox.fs" />
+    <None Include="shaders\skybox.vs" />
+    <None Include="shaders\main.vs" />
+    <None Include="shaders\cube.vs" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="common.h" />
-    <ClInclude Include="cube.h" />
-    <ClInclude Include="input_handler.h" />
-    <ClInclude Include="light.h" />
-    <ClInclude Include="model.h" />
-    <ClInclude Include="main.h" />
-    <ClInclude Include="mesh.h" />
-    <ClInclude Include="shader.h" />
-    <ClInclude Include="plane.h" />
-    <ClInclude Include="skybox.h" />
-    <ClInclude Include="textures.h" />
-    <ClInclude Include="timer.h" />
+    <ClInclude Include="src\common.h" />
+    <ClInclude Include="src\main.h" />
+    <ClInclude Include="src\model\cube.h" />
+    <ClInclude Include="src\model\mesh.h" />
+    <ClInclude Include="src\model\model.h" />
+    <ClInclude Include="src\model\plane.h" />
+    <ClInclude Include="src\model\skybox.h" />
+    <ClInclude Include="src\shader\light.h" />
+    <ClInclude Include="src\shader\shader.h" />
+    <ClInclude Include="src\util\camera.h" />
+    <ClInclude Include="src\util\framebuffer.h" />
+    <ClInclude Include="src\util\input_handler.h" />
+    <ClInclude Include="src\util\textures.h" />
+    <ClInclude Include="src\util\timer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -21,93 +21,102 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files\src</Filter>
-    </ClCompile>
-    <ClCompile Include="shader.cpp">
-      <Filter>Source Files\src</Filter>
-    </ClCompile>
-    <ClCompile Include="camera.h">
-      <Filter>Source Files\src</Filter>
-    </ClCompile>
-    <ClCompile Include="mesh.cpp">
-      <Filter>Source Files\src</Filter>
-    </ClCompile>
-    <ClCompile Include="model.cpp">
-      <Filter>Source Files\src</Filter>
-    </ClCompile>
-    <ClCompile Include="cube.cpp">
-      <Filter>Source Files\src</Filter>
-    </ClCompile>
-    <ClCompile Include="textures.cpp">
-      <Filter>Source Files\src</Filter>
-    </ClCompile>
-    <ClCompile Include="light.cpp">
-      <Filter>Source Files\src</Filter>
-    </ClCompile>
-    <ClCompile Include="plane.cpp">
+    <ClCompile Include="src\shader\light.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="input_handler.cpp">
+    <ClCompile Include="src\shader\shader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\util\input_handler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\util\textures.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\model\cube.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\model\mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\model\model.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\model\plane.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\util\framebuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\vertex.shader">
+    <None Include="shaders\main.vs">
       <Filter>Resource Files\shaders</Filter>
     </None>
-    <None Include="shaders\frag.shader">
+    <None Include="shaders\main.fs">
       <Filter>Resource Files\shaders</Filter>
     </None>
-    <None Include="shaders\fragUnlit.shader">
+    <None Include="shaders\unlit.fs">
       <Filter>Resource Files\shaders</Filter>
     </None>
-    <None Include="shaders\vertexCube.shader">
+    <None Include="shaders\cube.vs">
       <Filter>Resource Files\shaders</Filter>
     </None>
-    <None Include="shaders\skyboxVertex.shader">
+    <None Include="shaders\skybox.vs">
       <Filter>Resource Files\shaders</Filter>
     </None>
-    <None Include="shaders\skyboxFrag.shader">
+    <None Include="shaders\skybox.fs">
       <Filter>Resource Files\shaders</Filter>
     </None>
-    <None Include="shaders\vertexPlane.shader" />
+    <None Include="shaders\plane.vs" />
+    <None Include="assimp-vc143-mt.dll" />
+    <None Include="shaders\framebuffer.vs" />
+    <None Include="shaders\framebuffer.fs" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="main.h">
-      <Filter>Source Files\src</Filter>
-    </ClInclude>
-    <ClInclude Include="shader.h">
-      <Filter>Source Files\src</Filter>
-    </ClInclude>
-    <ClInclude Include="mesh.h">
-      <Filter>Source Files\src</Filter>
-    </ClInclude>
-    <ClInclude Include="model.h">
-      <Filter>Source Files\src</Filter>
-    </ClInclude>
-    <ClInclude Include="common.h">
-      <Filter>Source Files\src</Filter>
-    </ClInclude>
-    <ClInclude Include="cube.h">
-      <Filter>Source Files\src</Filter>
-    </ClInclude>
-    <ClInclude Include="textures.h">
-      <Filter>Source Files\src</Filter>
-    </ClInclude>
-    <ClInclude Include="timer.h">
-      <Filter>Source Files\src</Filter>
-    </ClInclude>
-    <ClInclude Include="skybox.h">
-      <Filter>Source Files\src</Filter>
-    </ClInclude>
-    <ClInclude Include="light.h">
-      <Filter>Source Files\src</Filter>
-    </ClInclude>
-    <ClInclude Include="plane.h">
+    <ClInclude Include="src\shader\light.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="input_handler.h">
+    <ClInclude Include="src\shader\shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\util\camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\util\input_handler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\util\textures.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\util\timer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\main.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\model\cube.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\model\mesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\model\model.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\model\plane.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\model\skybox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\util\framebuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

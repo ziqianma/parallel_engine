@@ -1,9 +1,9 @@
 #pragma once
 
-#include "shader.h"
+#include "shader/shader.h"
 #include "mesh.h"
 #include "common.h"
-#include "textures.h"
+#include "util/textures.h"
 
 static const float PLANE_VERTS[] = {
     // positions         // texCoords

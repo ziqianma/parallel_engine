@@ -28,7 +28,7 @@ void Plane::Draw(const Shader& shader)
 
 void Plane::loadPlaneTexture(const Shader& shader, const std::string& texturePath)
 {
-    TextureLoader::LoadTexture(texturePath, "texture_diffuse");
+    TextureLoader::LoadTexture(shader.get_shader_id(), texturePath, "texture_diffuse");
 
     const Texture& temp = TextureLoader::GetTexture(texturePath);
     m_PlaneTextureID = temp.id;
@@ -41,7 +41,7 @@ void Plane::loadPlaneTexture(const Shader& shader, const std::string& texturePat
     shader.addUniform3f("material.ambient", 1.0f, 1.0f, 1.0f);
     shader.addUniform3f("material.diffuse", 1.0f, 1.0f, 1.0f);
     shader.addUniform3f("material.specular", 1.0f, 1.0f, 1.0f);
-    shader.addUniform1f("material.shininess", 1.0f);
+    shader.addUniform1f("material.shininess", 4.0f);
     shader.unbind();
 }
 

@@ -1,8 +1,8 @@
 #pragma once
 #include "common.h"
-#include "shader.h"
+#include "shader/shader.h"
 #include "mesh.h"
-#include "textures.h"
+#include "util/textures.h"
 
 static float CUBE_VERTS[288] = {
     // Back face

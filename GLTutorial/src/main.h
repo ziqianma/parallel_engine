@@ -1,13 +1,14 @@
 #pragma once
 
 #include "common.h"
-#include "shader.h"
-#include "skybox.h"
-#include "model.h"
-#include "camera.h"
-#include "cube.h"  
-#include "plane.h"  
-#include "light.h"  
+#include "shader/shader.h"
+#include "model/skybox.h"
+#include "model/model.h"
+#include "util/camera.h"
+#include "model/cube.h"  
+#include "model/plane.h"  
+#include "shader/light.h"  
+#include "util/framebuffer.h"
 
 #include <filesystem>
 #include <memory>
@@ -25,13 +26,13 @@ constexpr glm::vec3 MODEL_POSITIONS[NUM_MODELS] = {
 constexpr glm::vec3 SUN_LIGHT_DIR = glm::vec3(1.0f, -1.0f, 1.0f);
 
 const LightData POINT_LIGHT_DATA(
-    glm::vec3(.0f),
-    glm::vec3(.4f, .0f, .0f),
+    glm::vec3(.1f),
+    glm::vec3(.4f),
     glm::vec3(1.0f));
 
 const LightData SUN_LIGHT_DATA(
+    glm::vec3(0.0f),
     glm::vec3(.3f),
-    glm::vec3(.0f),
     glm::vec3(0.0f));
 
 inline constexpr unsigned int NUM_POINT_LIGHTS = 5;

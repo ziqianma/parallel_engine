@@ -14,6 +14,12 @@ Model::Model(const std::string& path, const Shader& shader, const std::vector<gl
 	shader.unbind();
 }
 
+Model::~Model() {
+	for (const std::string& texturePath : m_ModelTexturePaths) {
+		TextureLoader::DeleteTexture(m_Shader.get_shader_id(), texturePath);
+	}
+}
+
 void Model::loadInstanceData(const std::vector<glm::mat4>& modelMatrices) 
 {
 	glGenBuffers(1, &m_InstanceVBO);
@@ -134,6 +140,8 @@ void Model::processMesh(aiMesh* mesh, const aiScene* scene)
 		loadMaterialTextures(texturePaths, material, aiTextureType::aiTextureType_HEIGHT, "texture_bump");
 	}
 
+	for(const std::string& texturePath : texturePaths) m_ModelTexturePaths.insert(texturePath);
+
 	m_Meshes.emplace_back(vertices, indices, texturePaths, numVerts, m_NumInstances);
 }
 
@@ -158,7 +166,7 @@ void Model::loadMaterialTextures(std::vector<std::string>& texturePaths, aiMater
 		std::string path = m_Directory + "/" + std::string(texturePath.C_Str());
 
 		// Load texture from loader
-		TextureLoader::LoadTexture(path, typeName);
+		TextureLoader::LoadTexture(m_Shader.get_shader_id(), path, typeName);
 
 		// Add as uniform
 		// typeNumber is i+1 since 0th texture is texture_(type)1

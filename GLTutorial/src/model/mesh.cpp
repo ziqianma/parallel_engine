@@ -4,8 +4,7 @@
 
 Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<std::string>& texturePaths, unsigned int numVerts, unsigned int numInstances) :
 	m_NumVerts(numVerts),
-	m_NumInstances(numInstances),
-	m_TexturePaths(texturePaths)
+	m_NumInstances(numInstances)
 {
 	setupMesh(vertices, indices);
 
@@ -13,12 +12,6 @@ Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>&
 		const Texture& temp = TextureLoader::GetTexture(texturePath);
 		m_TextureIDs.push_back(temp.id);
 		m_TextureUnits.push_back(temp.texUnit);
-	}
-}
-
-Mesh::~Mesh() {
-	for (const std::string& texturePath : m_TexturePaths) {
-		TextureLoader::DeleteTexture(texturePath);
 	}
 }
 

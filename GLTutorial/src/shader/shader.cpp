@@ -64,6 +64,9 @@ void Shader::unbind() const {
     glUseProgram(0);
 }
 
+unsigned int Shader::get_shader_id() const {
+    return _shaderProgram;
+}
 
 void Shader::createShaderProgram() {
     int success;

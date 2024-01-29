@@ -1,6 +1,21 @@
 #include "main.h"
 #include <stb_image.h>
 
+inline std::unique_ptr<Shader> modelShader;
+inline std::unique_ptr<Shader> lightCubeShader;
+inline std::unique_ptr<Shader> cubeShader;
+inline std::unique_ptr<Shader> skyboxShader;
+inline std::unique_ptr<Shader> planeShader;
+inline std::unique_ptr<Shader> colorBufferShader;
+
+inline std::unique_ptr<Skybox> skybox;
+inline std::unique_ptr<Model> ourModel;
+inline std::unique_ptr<Cube> lightCube;
+inline std::unique_ptr<Cube> cubeGroup;
+inline std::unique_ptr<Plane> floorPlane;
+
+inline void DrawScene();
+
 int main(void)
 {
     /* Initialize the library */
@@ -37,17 +52,24 @@ int main(void)
     std::cout << glGetString(GL_VERSION) << std::endl;
 
     // create shader
-    Shader modelShader = Shader::Shader("shaders/vertex.shader", "shaders/frag.shader");
+    modelShader = std::make_unique<Shader>("shaders/main.vs", "shaders/main.fs");
 
-    Shader lightCubeShader = Shader::Shader("shaders/vertexCube.shader", "shaders/fragUnlit.shader");
-    Shader cubeShader = Shader::Shader("shaders/vertexCube.shader", "shaders/frag.shader");
+    lightCubeShader = std::make_unique<Shader>("shaders/cube.vs", "shaders/unlit.fs");
+    cubeShader = std::make_unique<Shader>("shaders/cube.vs", "shaders/main.fs");
 
-    Shader skyboxShader = Shader::Shader("shaders/skyboxVertex.shader", "shaders/skyboxFrag.shader");
-    Shader planeShader = Shader::Shader("shaders/vertexPlane.shader", "shaders/frag.shader");
+    skyboxShader = std::make_unique<Shader>("shaders/skybox.vs", "shaders/skybox.fs");
+    planeShader = std::make_unique<Shader>("shaders/plane.vs", "shaders/main.fs");
+    colorBufferShader = std::make_unique<Shader>("shaders/framebuffer.vs", "shaders/framebuffer.fs");
+    
+    auto rbo1 = std::make_unique<RenderBuffer>(game_constants::SCR_WIDTH, game_constants::SCR_HEIGHT, GL_DEPTH_STENCIL_ATTACHMENT, GL_DEPTH24_STENCIL8);
+    FrameBuffer color_fb1(std::move(rbo1), game_constants::SCR_WIDTH, game_constants::SCR_HEIGHT, GL_COLOR_ATTACHMENT0, GL_RGB, game_constants::QUAD_VERTICES);
+
+    auto rbo2 = std::make_unique<RenderBuffer>(game_constants::SCR_WIDTH, game_constants::SCR_HEIGHT, GL_DEPTH_STENCIL_ATTACHMENT, GL_DEPTH24_STENCIL8);
+    FrameBuffer color_fb2(std::move(rbo2), game_constants::SCR_WIDTH, game_constants::SCR_HEIGHT, GL_COLOR_ATTACHMENT0, GL_RGB, game_constants::QUAD2_VERTICES);
 
     std::vector<glm::mat4> lightCube_ModelMatrices;
 
-    LightGroup lightGroup(std::vector<Shader>({ modelShader, planeShader, cubeShader }),
+    LightGroup lightGroup(std::vector<Shader>({ *modelShader, *planeShader, *cubeShader }),
         POINT_LIGHT_DATA,
         generatePositions(NUM_POINT_LIGHTS, lightCube_ModelMatrices),
         SUN_LIGHT_DATA, 
@@ -68,9 +90,9 @@ int main(void)
     std::vector<glm::mat4> cube_ModelMatrices;
     for (int z = 0; z < 10; z++) {
         for (int y = 0; y < 10; y++) {
-            for (int x = 0; x < 10; x++) {
+            for (int x = 0; x < 100; x++) {
                 glm::mat4 model = glm::mat4(1.0f);
-                model = glm::translate(model, glm::vec3(x-15.0f, y-5.0f, z-15.0f));
+                model = glm::translate(model, glm::vec3(x-50.0f, y-15.0f, z-50.0f));
                 model = glm::scale(model, glm::vec3(1.0f));
 
                 cube_ModelMatrices.push_back(model);
@@ -79,15 +101,14 @@ int main(void)
     }
 
     // Create skybox
-    Skybox skybox(skyboxShader);
+    skybox = std::make_unique<Skybox>(*skyboxShader);
 
     // Create other game objs
-    Model* ourModel = new Model(WORKING_DIR + "/" + "resources/model/backpack/backpack.obj", modelShader, model_ModelMatrices);
-    Cube lightCube(lightCubeShader, WORKING_DIR + "/" + "resources/redstone_lamp_on.png", lightCube_ModelMatrices);
+    ourModel = std::make_unique<Model>(WORKING_DIR + "/" + "resources/model/backpack/backpack.obj", *modelShader, model_ModelMatrices);
+    lightCube = std::make_unique<Cube>(*lightCubeShader, WORKING_DIR + "/" + "resources/redstone_lamp_on.png", lightCube_ModelMatrices);
 
-    Cube cubeGroup(cubeShader, WORKING_DIR + "/" + "resources/gold_block.png", cube_ModelMatrices);
-
-    Plane floor(planeShader, WORKING_DIR + "/" + "resources/floor2.jpg", floor_ModelMatrix);
+    cubeGroup = std::make_unique<Cube>(*cubeShader, WORKING_DIR + "/" + "resources/gold_block.png", cube_ModelMatrices);
+    floorPlane = std::make_unique<Plane>(*planeShader, WORKING_DIR + "/" + "resources/floor2.jpg", floor_ModelMatrix);
 
     // timing
     float dt = 0.0f;	// time between current frame and last frame
@@ -122,7 +143,7 @@ int main(void)
             camera.ProcessKeyboard(RIGHT, dt);
 
         if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {
-            delete ourModel;
+            ourModel.reset();
             ourModel = nullptr;
         }
 
@@ -158,78 +179,61 @@ int main(void)
         
 
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)game_constants::SCR_WIDTH / (float)game_constants::SCR_HEIGHT, 0.1f, 100.0f);
-
-        skyboxShader.bind();
-        skyboxShader.addUniformMat4("projection", projection);
-        skyboxShader.unbind();
-                
-        lightCubeShader.bind();
-        lightCubeShader.addUniformMat4("projection", projection);
-        lightCubeShader.unbind();
-
-        cubeShader.bind();
-        cubeShader.addUniformMat4("projection", projection);
-        cubeShader.unbind();
-
-        planeShader.bind();
-        planeShader.addUniformMat4("projection", projection);
-        planeShader.unbind();
-
         glm::mat4 view = camera.GetViewMatrix();
+
+        skyboxShader->bind();
+        skyboxShader->addUniformMat4("projection", projection);
+        skyboxShader->addUniformMat4("view", view);
+        skyboxShader->unbind();
+                
+        lightCubeShader->bind();
+        lightCubeShader->addUniformMat4("projection", projection);
+        lightCubeShader->addUniformMat4("view", view);
+        lightCubeShader->unbind();
+
+        cubeShader->bind();
+        cubeShader->addUniformMat4("projection", projection);
+        cubeShader->addUniformMat4("view", view);
+        cubeShader->addUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
+        cubeShader->unbind();
+
+        planeShader->bind();
+        planeShader->addUniformMat4("projection", projection);
+        planeShader->addUniformMat4("view", view);
+        cubeShader->addUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
+        planeShader->unbind();
+
+        modelShader->bind();
+        modelShader->addUniformMat4("projection", projection);
+        modelShader->addUniformMat4("view", view);
+        cubeShader->addUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
+        modelShader->unbind();
+
 
         // render
         // ------   
         
         TextureLoader::Update();
 
-        glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
-        glEnable(GL_DEPTH_TEST);
-        //glEnable(GL_CULL_FACE);
+        color_fb1.bind();
+        DrawScene();
+        color_fb1.unbind();
 
-        //render lights
-        lightCubeShader.bind();
-        lightCubeShader.addUniformMat4("view", view);
-        lightCubeShader.unbind();
+        // second pass
+        color_fb2.bind();
+        DrawScene();
+        color_fb2.unbind();
 
-        lightCube.Draw(lightCubeShader);
+        // four pass
+        DrawScene();
 
+        // third pass
+        glDisable(GL_DEPTH_TEST);
 
-        // render cubes
-        cubeShader.bind();
-        cubeShader.addUniformMat4("view", view);
-        cubeShader.addUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
-        cubeShader.unbind();
-
-        cubeGroup.Draw(cubeShader);
-
-        // render floor
-        planeShader.bind();
-        planeShader.addUniformMat4("view", view);
-        planeShader.addUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
-        planeShader.unbind();
-
-        floor.Draw(planeShader);
-
-        // render model
-        if (ourModel) {
-            modelShader.bind();
-            glm::mat4 model = glm::mat4(1.0f);
-            angle += 0.1*dt;
-            model = glm::rotate(model, angle, glm::vec3 (0.0f, 1.0f, 0.0f));
-            modelShader.addUniformMat4("model", model);
-
-            modelShader.addUniformMat4("projection", projection);
-            modelShader.addUniformMat4("view", view);
-            modelShader.addUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
-            modelShader.unbind();
-
-            ourModel->Draw(modelShader);
-        }
-
-        //  render skybox
-        skybox.Draw(view);
+        colorBufferShader->bind();
+        color_fb2.draw_onto_quad();
+        color_fb1.draw_onto_quad();
+        colorBufferShader->unbind();
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
@@ -317,4 +321,34 @@ std::vector<glm::vec3> generatePositions(int numPointLights, std::vector<glm::ma
     }
 
     return positions;
+}
+
+void DrawScene() {
+    glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glEnable(GL_DEPTH_TEST);
+    //glEnable(GL_CULL_FACE);
+
+    //render lights
+    lightCube->Draw(*lightCubeShader);
+
+    // render cubes
+    cubeGroup->Draw(*cubeShader);
+
+    // render floor
+    floorPlane->Draw(*planeShader);
+
+    // render model
+    if (ourModel) {
+        modelShader->bind();
+        glm::mat4 model = glm::mat4(1.0f);
+        modelShader->addUniformMat4("model", model);
+        modelShader->unbind();
+
+        ourModel->Draw(*modelShader);
+    }
+
+    skybox->Draw(camera.GetViewMatrix());
+
 }
