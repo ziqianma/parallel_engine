@@ -1,6 +1,6 @@
 #include "framebuffer.h"
 
-FrameBuffer::FrameBuffer(std::unique_ptr<RenderBuffer> buffer, unsigned int width, unsigned int height, GLenum attachment, GLenum textureFormat, const float quadVertices[]) :
+FrameBuffer::FrameBuffer(std::unique_ptr<RenderBuffer> buffer, unsigned int width, unsigned int height, GLenum attachment, GLenum internalFormat, GLenum format, GLenum dataType, const float quadVertices[]) :
 	m_FrameBufferWidth(width),
 	m_FrameBufferHeight(height),
 	m_FrameBufferTextureID(0),
@@ -15,7 +15,7 @@ FrameBuffer::FrameBuffer(std::unique_ptr<RenderBuffer> buffer, unsigned int widt
 	glGenTextures(1, &m_FrameBufferTextureID);
 	glBindTexture(GL_TEXTURE_2D, m_FrameBufferTextureID);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, textureFormat, width, height, 0, textureFormat, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, dataType, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 

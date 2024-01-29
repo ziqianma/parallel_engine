@@ -5,7 +5,7 @@
 class RenderBuffer;
 class FrameBuffer {
 public:
-	FrameBuffer(std::unique_ptr<RenderBuffer> buffer, unsigned int width, unsigned int height, GLenum attachment, GLenum textureFormat, const float quadVertices[]);
+	FrameBuffer(std::unique_ptr<RenderBuffer> buffer, unsigned int width, unsigned int height, GLenum attachment, GLenum internalFormat, GLenum format, GLenum dataType, const float quadVertices[]);
 	void bind() const;
 	void unbind() const;
 

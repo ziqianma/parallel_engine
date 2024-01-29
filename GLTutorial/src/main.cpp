@@ -7,6 +7,7 @@ inline std::unique_ptr<Shader> cubeShader;
 inline std::unique_ptr<Shader> skyboxShader;
 inline std::unique_ptr<Shader> planeShader;
 inline std::unique_ptr<Shader> colorBufferShader;
+inline std::unique_ptr<Shader> depthBufferShader;
 
 inline std::unique_ptr<Skybox> skybox;
 inline std::unique_ptr<Model> ourModel;
@@ -59,13 +60,14 @@ int main(void)
 
     skyboxShader = std::make_unique<Shader>("shaders/skybox.vs", "shaders/skybox.fs");
     planeShader = std::make_unique<Shader>("shaders/plane.vs", "shaders/main.fs");
-    colorBufferShader = std::make_unique<Shader>("shaders/framebuffer.vs", "shaders/framebuffer.fs");
-    
-    auto rbo1 = std::make_unique<RenderBuffer>(game_constants::SCR_WIDTH, game_constants::SCR_HEIGHT, GL_DEPTH_STENCIL_ATTACHMENT, GL_DEPTH24_STENCIL8);
-    FrameBuffer color_fb1(std::move(rbo1), game_constants::SCR_WIDTH, game_constants::SCR_HEIGHT, GL_COLOR_ATTACHMENT0, GL_RGB, game_constants::QUAD_VERTICES);
 
-    auto rbo2 = std::make_unique<RenderBuffer>(game_constants::SCR_WIDTH, game_constants::SCR_HEIGHT, GL_DEPTH_STENCIL_ATTACHMENT, GL_DEPTH24_STENCIL8);
-    FrameBuffer color_fb2(std::move(rbo2), game_constants::SCR_WIDTH, game_constants::SCR_HEIGHT, GL_COLOR_ATTACHMENT0, GL_RGB, game_constants::QUAD2_VERTICES);
+    colorBufferShader = std::make_unique<Shader>("shaders/framebuffer.vs", "shaders/framebuffer.fs");
+    depthBufferShader = std::make_unique<Shader>("shaders/framebuffer.vs", "shaders/depth.fs");
+
+    auto rbo1 = std::make_unique<RenderBuffer>(game_constants::SCR_WIDTH, game_constants::SCR_HEIGHT, GL_DEPTH_STENCIL_ATTACHMENT, GL_DEPTH24_STENCIL8);
+    FrameBuffer color_fb1(std::move(rbo1), game_constants::SCR_WIDTH, game_constants::SCR_HEIGHT, GL_COLOR_ATTACHMENT0, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE, game_constants::QUAD_VERTICES);
+
+    FrameBuffer depth_fb2(NULL, game_constants::SCR_WIDTH, game_constants::SCR_HEIGHT, GL_DEPTH_STENCIL_ATTACHMENT, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, game_constants::QUAD2_VERTICES);
 
     std::vector<glm::mat4> lightCube_ModelMatrices;
 
@@ -220,9 +222,9 @@ int main(void)
         color_fb1.unbind();
 
         // second pass
-        color_fb2.bind();
+        depth_fb2.bind();
         DrawScene();
-        color_fb2.unbind();
+        depth_fb2.unbind();
 
         // four pass
         DrawScene();
@@ -231,9 +233,12 @@ int main(void)
         glDisable(GL_DEPTH_TEST);
 
         colorBufferShader->bind();
-        color_fb2.draw_onto_quad();
         color_fb1.draw_onto_quad();
         colorBufferShader->unbind();
+
+        depthBufferShader->bind();
+        depth_fb2.draw_onto_quad();
+        depthBufferShader->unbind();
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);

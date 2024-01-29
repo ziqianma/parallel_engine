@@ -45,3 +45,8 @@ Game object instancing (models, lights, primitives, etc..)
 <div>
 <img src="demo3.gif" width="900" height="450"/>
 </div>
+Framebuffer system
+</div>
+<div>
+<img src="demo4.gif" width="800" height="438"/>
+</div>

@@ -156,6 +156,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="assimp-vc143-mt.dll" />
+    <None Include="shaders\depth.fs" />
     <None Include="shaders\framebuffer.fs" />
     <None Include="shaders\main.fs" />
     <None Include="shaders\unlit.fs" />

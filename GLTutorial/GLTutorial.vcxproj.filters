@@ -75,6 +75,7 @@
     <None Include="assimp-vc143-mt.dll" />
     <None Include="shaders\framebuffer.vs" />
     <None Include="shaders\framebuffer.fs" />
+    <None Include="shaders\depth.fs" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\shader\light.h">
