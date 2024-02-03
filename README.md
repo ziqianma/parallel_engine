@@ -39,15 +39,15 @@ Lighting maps (diffuse, specular textures)
 Skybox (cubemap texture) + environment mapping demo (environment reflection)
 </div>
 <div>
-Game object instancing (models, lights, primitives, etc..)
 <img src="demo1.png" width="500" height="275"/>
 <img src="demo3.gif" width="500" height="200"/>
+Game object instancing
 </div>
 <div>
-Framebuffer system
 <img src="demo4.gif" width="250" height="200"/>
+Framebuffer system
 </div>
 <div>
-Directional Light Shadows
 <img src="shadow_demo.png" width="500" height="275"/>
+Directional Light Shadows
 </div>
