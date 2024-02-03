@@ -48,7 +48,7 @@ uniform vec3 viewPos;
 
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 vec3 CalcDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir);
-float CalcShadow(vec4 fragPosLightSpace);
+float CalcShadow(vec4 fragPosLightSpace, float bias);
 void gamma_correct(inout vec3 diffuse);
 
 void main()
@@ -120,7 +120,8 @@ vec3 CalcDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir)
 
     vec3 specular = light.specular * material.specular * spec * color;
 
-    float shadow = CalcShadow(FragPosLightSpace);   
+    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);  
+    float shadow = CalcShadow(FragPosLightSpace, bias);   
     vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular));  
 
     return lighting;
@@ -132,7 +133,7 @@ void gamma_correct(inout vec3 diffuse)
     diffuse = pow(diffuse, vec3(1.0 / gamma));
 }
 
-float CalcShadow(vec4 fragPosLightSpace) 
+float CalcShadow(vec4 fragPosLightSpace, float bias) 
 {
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
     projCoords = projCoords * 0.5 + 0.5; 
@@ -140,5 +141,5 @@ float CalcShadow(vec4 fragPosLightSpace)
     float closestDepth = texture(shadowMap, projCoords.xy).r;
     float currentDepth = projCoords.z;
 
-    return (currentDepth < closestDepth) ? 0.0 : 1.0;
+    return (currentDepth - bias < closestDepth) ? 0.0 : 1.0;
 }

@@ -69,7 +69,7 @@ int main(void)
     depthQuadShader = std::make_unique<Shader>("shaders/quad.vs", "shaders/depth.fs");
     depth_fb = std::make_unique<FrameBuffer>(*depthQuadShader,
         nullptr, "screenTexture",
-        game_constants::SCR_WIDTH, game_constants::SCR_HEIGHT,
+        game_constants::SHADOW_WIDTH, game_constants::SHADOW_HEIGHT,
         GL_DEPTH_STENCIL_ATTACHMENT, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8,
         game_constants::QUAD2_VERTICES);
 
@@ -121,11 +121,11 @@ int main(void)
 
 
     // light space matrix
-    float near_plane = 0.1f, far_plane = 20.0f;
+    float near_plane = 0.1f, far_plane = 50.0f;
 
-    glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+    glm::mat4 lightProjection = glm::ortho(-25.0f, 25.0f, -25.0f, 25.0f, near_plane, far_plane);
     glm::mat4 lightView = glm::lookAt(
-        5.0f * SUN_LIGHT_DIR,
+        10.0f * SUN_LIGHT_DIR,
         glm::vec3(0.0f, 0.0f, 0.0f),
         glm::vec3(0.0f, 1.0f, 0.0f));
 
@@ -231,11 +231,13 @@ int main(void)
         TextureLoader::Update();
 
         // first pass, depth map from light's perspective
+        glViewport(0, 0, game_constants::SHADOW_WIDTH, game_constants::SHADOW_HEIGHT);
         depth_fb->bind();
         glEnable(GL_DEPTH_TEST);
         DrawSceneSimpleDepth(lightSpaceMatrix);
         depth_fb->unbind();
 
+        glViewport(0, 0, game_constants::SCR_WIDTH, game_constants::SCR_HEIGHT);
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         DrawScene();

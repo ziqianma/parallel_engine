@@ -55,6 +55,9 @@ inline namespace game_constants {
     inline constexpr unsigned int SCR_WIDTH = 1920;
     inline constexpr unsigned int SCR_HEIGHT = 1080;
 
+    inline constexpr unsigned int SHADOW_WIDTH = 1024;
+    inline constexpr unsigned int SHADOW_HEIGHT = 1024;
+
     inline constexpr const char* POINT_LIGHT_LIST_NAME = "pointLights";
     inline constexpr const char* DIR_LIGHT_NAME = "sun";
 }
