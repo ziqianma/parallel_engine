@@ -73,9 +73,12 @@
     </None>
     <None Include="shaders\plane.vs" />
     <None Include="assimp-vc143-mt.dll" />
-    <None Include="shaders\framebuffer.vs" />
-    <None Include="shaders\framebuffer.fs" />
+    <None Include="shaders\quad.vs" />
+    <None Include="shaders\quad.fs" />
     <None Include="shaders\depth.fs" />
+    <None Include="shaders\simple_depthMap.vs" />
+    <None Include="shaders\simple_depthMap.fs" />
+    <None Include="shaders\shadow.fs" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\shader\light.h">

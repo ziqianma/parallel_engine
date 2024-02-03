@@ -1,9 +1,10 @@
 #include "framebuffer.h"
 
-FrameBuffer::FrameBuffer(std::unique_ptr<RenderBuffer> buffer, unsigned int width, unsigned int height, GLenum attachment, GLenum internalFormat, GLenum format, GLenum dataType, const float quadVertices[]) :
+FrameBuffer::FrameBuffer(const Shader& shader, std::unique_ptr<RenderBuffer> buffer, const std::string& textureName, unsigned int width, unsigned int height, GLenum attachment, GLenum internalFormat, GLenum format, GLenum dataType, const float quadVertices[]) :
 	m_FrameBufferWidth(width),
 	m_FrameBufferHeight(height),
 	m_FrameBufferTextureID(0),
+	m_FrameBufferTextureUnit(0),
 	m_QuadVAO(0),
 	m_QuadVBO(0),
 	m_RenderBuffer(nullptr)
@@ -29,6 +30,13 @@ FrameBuffer::FrameBuffer(std::unique_ptr<RenderBuffer> buffer, unsigned int widt
 		std::cout << "Failed to bind framebuffer! id: " << m_FrameBufferObject << std::endl;
 		return;
 	}
+	
+	unsigned int frameBufferTextureUnit = TextureLoader::GetAvailableTextureUnit(shader.get_shader_id(), textureName);
+	m_FrameBufferTextureUnit = frameBufferTextureUnit;
+
+	shader.bind();
+	shader.addUniform1i(textureName, frameBufferTextureUnit);
+	shader.unbind();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -56,13 +64,12 @@ void FrameBuffer::setup_quad(const float quadVertices[]) {
 void FrameBuffer::draw_onto_quad() const {
 	glBindVertexArray(m_QuadVAO);
 
-	glActiveTexture(GL_TEXTURE0);
+	glActiveTexture(GL_TEXTURE0 + m_FrameBufferTextureUnit);
 	glBindTexture(GL_TEXTURE_2D, m_FrameBufferTextureID);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 
 	glBindVertexArray(0);
 }
-
 void FrameBuffer::bind() const {	
 	glBindFramebuffer(GL_FRAMEBUFFER, m_FrameBufferObject);
 }

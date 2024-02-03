@@ -4,6 +4,7 @@
 out vec4 FragColor;
 
 in vec3 FragPos;
+in vec4 FragPosLightSpace;
 
 in vec3 Normal;
 in vec2 TexCoords;
@@ -39,6 +40,7 @@ struct Material {
     float shininess;
 };
 
+uniform sampler2D shadowMap;
 uniform Material material;
 uniform int numPointLights;
 
@@ -46,6 +48,7 @@ uniform vec3 viewPos;
 
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 vec3 CalcDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir);
+float CalcShadow(vec4 fragPosLightSpace);
 void gamma_correct(inout vec3 diffuse);
 
 void main()
@@ -116,12 +119,26 @@ vec3 CalcDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir)
     gamma_correct(diffuse);
 
     vec3 specular = light.specular * material.specular * spec * color;
-    
-    return (ambient + diffuse + specular);
+
+    float shadow = CalcShadow(FragPosLightSpace);   
+    vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular));  
+
+    return lighting;
 }
 
 void gamma_correct(inout vec3 diffuse)
 {
     float gamma = 2.2f;
     diffuse = pow(diffuse, vec3(1.0 / gamma));
+}
+
+float CalcShadow(vec4 fragPosLightSpace) 
+{
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    projCoords = projCoords * 0.5 + 0.5; 
+
+    float closestDepth = texture(shadowMap, projCoords.xy).r;
+    float currentDepth = projCoords.z;
+
+    return (currentDepth < closestDepth) ? 0.0 : 1.0;
 }

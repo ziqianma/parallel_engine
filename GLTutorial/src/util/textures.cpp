@@ -105,7 +105,7 @@ void TextureLoader::Update()
 	}
 }
 
-unsigned int TextureLoader::GetAvailableTextureUnit(unsigned int shaderProgramID)
+unsigned int TextureLoader::GetAvailableTextureUnit(unsigned int shaderProgramID, const std::string& name)
 {
 	// initialize available texture units per shader, if they haven't been before
 	if (s_AvailableTextureUnits.count(shaderProgramID) == 0) {
@@ -115,7 +115,7 @@ unsigned int TextureLoader::GetAvailableTextureUnit(unsigned int shaderProgramID
 	unsigned int textureUnit = 0;
 	for (int i = 0; i < MAX_AVAILABLE_TEXTURE_UNITS; i++) {
 		if (s_AvailableTextureUnits[shaderProgramID][i] == 1) {
-			std::cout << "Shader(" << shaderProgramID << "): took texture unit(" << i << ")" << std::endl;
+			std::cout << "Shader(" << shaderProgramID << "): took texture unit(" << i << ") for (" << name << ")" << std::endl;
 			textureUnit = i;
 			s_AvailableTextureUnits[shaderProgramID][i] = 0;
 			break;
@@ -140,7 +140,7 @@ void TextureLoader::LoadTexture(unsigned int shaderProgramID, const std::string&
 	glGenTextures(1, &textureID);
 
 	// If a texture is being initialized for the first time, set that texture unit "unavaialble" and assign
-	unsigned int textureUnit = GetAvailableTextureUnit(shaderProgramID);
+	unsigned int textureUnit = GetAvailableTextureUnit(shaderProgramID, path);
 
 	// push uniquely managed texture pointer into loaded texture map.
 	s_LoadedTextures[path] = std::make_unique<Texture>(textureID, typeName, textureUnit);
@@ -183,7 +183,7 @@ std::unique_ptr<Texture> TextureLoader::LoadSkyboxTexture(unsigned int skyboxSha
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-	unsigned int textureUnit = GetAvailableTextureUnit(skyboxShaderID);
+	unsigned int textureUnit = GetAvailableTextureUnit(skyboxShaderID, path);
 
 	// move pointer ownership to skybox class
 	return std::make_unique<Texture>(textureID, textureType, textureUnit);

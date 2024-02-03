@@ -6,8 +6,8 @@ inline std::unique_ptr<Shader> lightCubeShader;
 inline std::unique_ptr<Shader> cubeShader;
 inline std::unique_ptr<Shader> skyboxShader;
 inline std::unique_ptr<Shader> planeShader;
-inline std::unique_ptr<Shader> colorBufferShader;
-inline std::unique_ptr<Shader> depthBufferShader;
+inline std::unique_ptr<Shader> simpleDepthShader;
+inline std::unique_ptr<Shader> depthQuadShader;
 
 inline std::unique_ptr<Skybox> skybox;
 inline std::unique_ptr<Model> ourModel;
@@ -15,7 +15,10 @@ inline std::unique_ptr<Cube> lightCube;
 inline std::unique_ptr<Cube> cubeGroup;
 inline std::unique_ptr<Plane> floorPlane;
 
+inline std::unique_ptr<FrameBuffer> depth_fb;
+
 inline void DrawScene();
+inline void DrawSceneSimpleDepth(const glm::mat4& lightSpaceMatrix);
 
 int main(void)
 {
@@ -59,15 +62,16 @@ int main(void)
     cubeShader = std::make_unique<Shader>("shaders/cube.vs", "shaders/main.fs");
 
     skyboxShader = std::make_unique<Shader>("shaders/skybox.vs", "shaders/skybox.fs");
-    planeShader = std::make_unique<Shader>("shaders/plane.vs", "shaders/main.fs");
+    planeShader = std::make_unique<Shader>("shaders/plane.vs", "shaders/shadow.fs");
 
-    colorBufferShader = std::make_unique<Shader>("shaders/framebuffer.vs", "shaders/framebuffer.fs");
-    depthBufferShader = std::make_unique<Shader>("shaders/framebuffer.vs", "shaders/depth.fs");
+    simpleDepthShader = std::make_unique<Shader>("shaders/simple_depthMap.vs", "shaders/simple_depthMap.fs");
 
-    auto rbo1 = std::make_unique<RenderBuffer>(game_constants::SCR_WIDTH, game_constants::SCR_HEIGHT, GL_DEPTH_STENCIL_ATTACHMENT, GL_DEPTH24_STENCIL8);
-    FrameBuffer color_fb1(std::move(rbo1), game_constants::SCR_WIDTH, game_constants::SCR_HEIGHT, GL_COLOR_ATTACHMENT0, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE, game_constants::QUAD_VERTICES);
-
-    FrameBuffer depth_fb2(NULL, game_constants::SCR_WIDTH, game_constants::SCR_HEIGHT, GL_DEPTH_STENCIL_ATTACHMENT, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, game_constants::QUAD2_VERTICES);
+    depthQuadShader = std::make_unique<Shader>("shaders/quad.vs", "shaders/depth.fs");
+    depth_fb = std::make_unique<FrameBuffer>(*depthQuadShader,
+        nullptr, "screenTexture",
+        game_constants::SCR_WIDTH, game_constants::SCR_HEIGHT,
+        GL_DEPTH_STENCIL_ATTACHMENT, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8,
+        game_constants::QUAD2_VERTICES);
 
     std::vector<glm::mat4> lightCube_ModelMatrices;
 
@@ -85,16 +89,12 @@ int main(void)
         model_ModelMatrices.push_back(model);
     }
 
-    glm::mat4 floor_ModelMatrix = glm::mat4(1.0f);
-    floor_ModelMatrix = glm::translate(floor_ModelMatrix, glm::vec3(0.0f,-5.0f,0.0f));
-    floor_ModelMatrix = glm::scale(floor_ModelMatrix, glm::vec3(20.0f));
-
     std::vector<glm::mat4> cube_ModelMatrices;
-    for (int z = 0; z < 10; z++) {
-        for (int y = 0; y < 10; y++) {
-            for (int x = 0; x < 100; x++) {
+    for (int z = -5; z < 5; z+=2) {
+        for (int y = 5; y < 6; y++) {
+            for (int x = -5; x < 5; x+=2) {
                 glm::mat4 model = glm::mat4(1.0f);
-                model = glm::translate(model, glm::vec3(x-50.0f, y-15.0f, z-50.0f));
+                model = glm::translate(model, glm::vec3(x, y, z));
                 model = glm::scale(model, glm::vec3(1.0f));
 
                 cube_ModelMatrices.push_back(model);
@@ -110,7 +110,7 @@ int main(void)
     lightCube = std::make_unique<Cube>(*lightCubeShader, WORKING_DIR + "/" + "resources/redstone_lamp_on.png", lightCube_ModelMatrices);
 
     cubeGroup = std::make_unique<Cube>(*cubeShader, WORKING_DIR + "/" + "resources/gold_block.png", cube_ModelMatrices);
-    floorPlane = std::make_unique<Plane>(*planeShader, WORKING_DIR + "/" + "resources/floor2.jpg", floor_ModelMatrix);
+    floorPlane = std::make_unique<Plane>(*planeShader, WORKING_DIR + "/" + "resources/floor2.jpg", depth_fb->getTextureID());
 
     // timing
     float dt = 0.0f;	// time between current frame and last frame
@@ -118,6 +118,18 @@ int main(void)
     int frameCount = 0;
 
     float angle = 0;
+
+
+    // light space matrix
+    float near_plane = 0.1f, far_plane = 20.0f;
+
+    glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+    glm::mat4 lightView = glm::lookAt(
+        5.0f * SUN_LIGHT_DIR,
+        glm::vec3(0.0f, 0.0f, 0.0f),
+        glm::vec3(0.0f, 1.0f, 0.0f));
+
+    glm::mat4 lightSpaceMatrix = lightProjection * lightView;
 
     glm::vec3 point_light_diffuse = POINT_LIGHT_DATA.diffuse;
     /* Loop until the user closes the window */
@@ -183,10 +195,11 @@ int main(void)
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)game_constants::SCR_WIDTH / (float)game_constants::SCR_HEIGHT, 0.1f, 100.0f);
         glm::mat4 view = camera.GetViewMatrix();
 
+
         skyboxShader->bind();
         skyboxShader->addUniformMat4("projection", projection);
         skyboxShader->addUniformMat4("view", view);
-        skyboxShader->unbind();
+        skyboxShader->unbind();     
                 
         lightCubeShader->bind();
         lightCubeShader->addUniformMat4("projection", projection);
@@ -202,43 +215,37 @@ int main(void)
         planeShader->bind();
         planeShader->addUniformMat4("projection", projection);
         planeShader->addUniformMat4("view", view);
-        cubeShader->addUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
+        planeShader->addUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
+        planeShader->addUniformMat4("lightSpaceMatrix", lightSpaceMatrix);
         planeShader->unbind();
 
         modelShader->bind();
         modelShader->addUniformMat4("projection", projection);
         modelShader->addUniformMat4("view", view);
-        cubeShader->addUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
+        modelShader->addUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
         modelShader->unbind();
-
 
         // render
         // ------   
         
         TextureLoader::Update();
 
-        color_fb1.bind();
-        DrawScene();
-        color_fb1.unbind();
+        // first pass, depth map from light's perspective
+        depth_fb->bind();
+        glEnable(GL_DEPTH_TEST);
+        DrawSceneSimpleDepth(lightSpaceMatrix);
+        depth_fb->unbind();
 
-        // second pass
-        depth_fb2.bind();
-        DrawScene();
-        depth_fb2.unbind();
-
-        // four pass
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         DrawScene();
 
-        // third pass
+        // final pass, draw framebuffer quad
         glDisable(GL_DEPTH_TEST);
-
-        colorBufferShader->bind();
-        color_fb1.draw_onto_quad();
-        colorBufferShader->unbind();
-
-        depthBufferShader->bind();
-        depth_fb2.draw_onto_quad();
-        depthBufferShader->unbind();
+        depthQuadShader->bind();
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        depth_fb->draw_onto_quad();
+        depthQuadShader->unbind();
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
@@ -339,7 +346,7 @@ void DrawScene() {
     lightCube->Draw(*lightCubeShader);
 
     // render cubes
-    cubeGroup->Draw(*cubeShader);
+    //cubeGroup->Draw(*cubeShader);
 
     // render floor
     floorPlane->Draw(*planeShader);
@@ -352,6 +359,35 @@ void DrawScene() {
         modelShader->unbind();
 
         ourModel->Draw(*modelShader);
+    }
+
+    skybox->Draw(camera.GetViewMatrix());
+
+}
+
+void DrawSceneSimpleDepth(const glm::mat4& lightSpaceMatrix) {
+
+    simpleDepthShader->bind();
+    simpleDepthShader->addUniformMat4("lightSpaceMatrix", lightSpaceMatrix);
+
+    glm::mat4 model = glm::mat4(1.0f);
+    simpleDepthShader->addUniformMat4("model", model);
+    simpleDepthShader->unbind();
+
+    glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glEnable(GL_DEPTH_TEST);
+
+    // render cubes
+    //cubeGroup->Draw(*simpleDepthShader);
+
+    // render floor
+    floorPlane->Draw(*simpleDepthShader);
+
+    // render model
+    if (ourModel) {
+        ourModel->Draw(*simpleDepthShader);
     }
 
     skybox->Draw(camera.GetViewMatrix());

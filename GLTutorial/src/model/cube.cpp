@@ -17,11 +17,6 @@ Cube::Cube(const Shader& shader, const std::string& texturePath, const std::vect
     m_CubeTextureUnit(0)
 {
     if (m_NumInstances != 0) {
-        shader.bind();
-        shader.addUniformMat4("model", glm::mat4(1.0f));
-        shader.addUniform3f("normal", 0.0f, 1.0f, 0.0f);
-        shader.unbind();
-
         loadCubeTexture(shader, texturePath);
 
         setupCubeMesh();
@@ -99,6 +94,7 @@ void Cube::setupInstances(std::vector<glm::mat4> modelMatrices)
 void Cube::Draw(const Shader& shader) 
 {
     shader.bind();
+    shader.addUniformMat4("model", glm::mat4(1.0f));
     bool hasTexture = m_CubeTextureID != -1;
     if (hasTexture) {
         glActiveTexture(GL_TEXTURE0 + m_CubeTextureUnit);

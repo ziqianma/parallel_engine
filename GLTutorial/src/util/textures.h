@@ -39,6 +39,7 @@ public:
 	static void LoadTexture(unsigned int shaderProgramID, const std::string& path, const std::string& typeName);
 	static const Texture& GetTexture(const std::string& path);
 	static void DeleteTexture(unsigned int shaderProgramID, const std::string& path);
+	static unsigned int GetAvailableTextureUnit(unsigned int shaderProgramID, const std::string& name);
 
 	static void Update();
 
@@ -51,7 +52,6 @@ private:
 	inline static std::unordered_map<unsigned int, std::array<unsigned int, MAX_AVAILABLE_TEXTURE_UNITS>> s_AvailableTextureUnits;
 	inline static std::mutex s_ImageMutex;
 
-	static unsigned int GetAvailableTextureUnit(unsigned int shaderProgramID);
 	static void LoadData(const std::string& path, const std::string& type, int textureID);
 	static void TextureFromFile(unsigned int textureID, const std::string& path, bool gamma, const std::string& typeName);
 };

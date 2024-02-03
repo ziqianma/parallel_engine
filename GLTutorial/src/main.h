@@ -14,16 +14,15 @@
 #include <memory>
 #include <future>
 
-constexpr unsigned int NUM_MODELS = 4;
+constexpr unsigned int NUM_MODELS = 3;
 
 constexpr glm::vec3 MODEL_POSITIONS[NUM_MODELS] = {
-    glm::vec3(2.0f,3.0f,-1.0f),
-    glm::vec3(-2.0f,5.0f,2.0f),
-    glm::vec3(-5.0f,7.0f,3.0f),
-    glm::vec3(3.5f,-2.0f,5.0f)
+    glm::vec3(2.0f,10.0f,-1.0f),
+    glm::vec3(-3.0f,5.0f,3.0f),
+    glm::vec3(3.5f,2.0f,2.0f)
 };
 
-constexpr glm::vec3 SUN_LIGHT_DIR = glm::vec3(1.0f, -1.0f, 1.0f);
+constexpr glm::vec3 SUN_LIGHT_DIR = glm::vec3(-1.0f,1.0f,1.0f);
 
 const LightData POINT_LIGHT_DATA(
     glm::vec3(.1f),
@@ -31,8 +30,8 @@ const LightData POINT_LIGHT_DATA(
     glm::vec3(1.0f));
 
 const LightData SUN_LIGHT_DATA(
-    glm::vec3(0.0f),
-    glm::vec3(.3f),
+    glm::vec3(.1f),
+    glm::vec3(.9f),
     glm::vec3(0.0f));
 
 inline constexpr unsigned int NUM_POINT_LIGHTS = 5;

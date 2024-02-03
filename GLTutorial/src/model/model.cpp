@@ -7,11 +7,6 @@ Model::Model(const std::string& path, const Shader& shader, const std::vector<gl
 {
 	loadModel(path);
 	loadInstanceData(modelMatrices);
-
-	// TEMPORARY: add a default model matrix initially.
-	shader.bind();
-	shader.addUniformMat4("model", glm::mat4(1.0f));
-	shader.unbind();
 }
 
 Model::~Model() {
@@ -183,6 +178,8 @@ void Model::loadMaterialTextures(std::vector<std::string>& texturePaths, aiMater
 }
 
 void Model::Draw(const Shader& shader) {
+	shader.addUniformMat4("model", glm::mat4(1.0f));
+
 	for (Mesh& mesh : m_Meshes) {
 		mesh.Draw(shader);
 	}
