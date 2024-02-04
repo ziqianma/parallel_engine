@@ -24,6 +24,17 @@ Cube::Cube(const Shader& shader, const std::string& texturePath, const std::vect
     }
 }
 
+Cube::Cube(const Shader& shader, const std::string& texturePath, const std::vector<glm::mat4>& modelMatrices, unsigned int depthMapTextureID) :
+    Cube(shader, texturePath, modelMatrices)
+{
+    m_DepthMapTextureID = depthMapTextureID;
+    m_DepthMapTextureUnit = TextureLoader::GetAvailableTextureUnit(shader.get_shader_id(), "shadow_map");
+
+    shader.bind();
+    shader.addUniform1i("shadow_map", m_DepthMapTextureUnit);
+    shader.unbind();
+}
+
 void Cube::loadCubeTexture(const Shader& shader, const std::string& texturePath) 
 {
     TextureLoader::LoadTexture(shader.get_shader_id(), texturePath, "texture_diffuse");
@@ -100,6 +111,9 @@ void Cube::Draw(const Shader& shader)
         glActiveTexture(GL_TEXTURE0 + m_CubeTextureUnit);
         glBindTexture(GL_TEXTURE_2D, m_CubeTextureID);
     }
+
+    glActiveTexture(GL_TEXTURE0 + m_DepthMapTextureUnit);
+    glBindTexture(GL_TEXTURE_2D, m_DepthMapTextureID);
 
     // draw mesh
     glBindVertexArray(m_VAO);

@@ -19,6 +19,7 @@ inline std::unique_ptr<FrameBuffer> depth_fb;
 
 inline void DrawScene();
 inline void DrawSceneSimpleDepth(const glm::mat4& lightSpaceMatrix);
+inline void SetupShaderUniforms(const glm::mat4& lightSpaceMatrix);
 
 int main(void)
 {
@@ -59,7 +60,7 @@ int main(void)
     modelShader = std::make_unique<Shader>("shaders/main.vs", "shaders/main.fs");
 
     lightCubeShader = std::make_unique<Shader>("shaders/cube.vs", "shaders/unlit.fs");
-    cubeShader = std::make_unique<Shader>("shaders/cube.vs", "shaders/main.fs");
+    cubeShader = std::make_unique<Shader>("shaders/cube.vs", "shaders/shadow.fs");
 
     skyboxShader = std::make_unique<Shader>("shaders/skybox.vs", "shaders/skybox.fs");
     planeShader = std::make_unique<Shader>("shaders/plane.vs", "shaders/shadow.fs");
@@ -90,18 +91,8 @@ int main(void)
     }
 
     std::vector<glm::mat4> cube_ModelMatrices;
-    for (int z = -5; z < 5; z+=2) {
-        for (int y = 5; y < 6; y++) {
-            for (int x = -5; x < 5; x+=2) {
-                glm::mat4 model = glm::mat4(1.0f);
-                model = glm::translate(model, glm::vec3(x, y, z));
-                model = glm::scale(model, glm::vec3(1.0f));
-
-                cube_ModelMatrices.push_back(model);
-            }
-        }
-    }
-
+    generatePositions(30, cube_ModelMatrices);
+      
     // Create skybox
     skybox = std::make_unique<Skybox>(*skyboxShader);
 
@@ -109,7 +100,7 @@ int main(void)
     ourModel = std::make_unique<Model>(WORKING_DIR + "/" + "resources/model/backpack/backpack.obj", *modelShader, model_ModelMatrices);
     lightCube = std::make_unique<Cube>(*lightCubeShader, WORKING_DIR + "/" + "resources/redstone_lamp_on.png", lightCube_ModelMatrices);
 
-    cubeGroup = std::make_unique<Cube>(*cubeShader, WORKING_DIR + "/" + "resources/gold_block.png", cube_ModelMatrices);
+    cubeGroup = std::make_unique<Cube>(*cubeShader, WORKING_DIR + "/" + "resources/gold_block.png", cube_ModelMatrices, depth_fb->getTextureID());
     floorPlane = std::make_unique<Plane>(*planeShader, WORKING_DIR + "/" + "resources/floor2.jpg", depth_fb->getTextureID());
 
     // timing
@@ -121,11 +112,12 @@ int main(void)
 
 
     // light space matrix
-    float near_plane = 0.1f, far_plane = 50.0f;
+    glm::mat4 lightProjection = glm::ortho(
+        game_constants::SHADOW_BOUNDING_BOX.x, game_constants::SHADOW_BOUNDING_BOX.y, game_constants::SHADOW_BOUNDING_BOX.z, game_constants::SHADOW_BOUNDING_BOX.w,
+        game_constants::NEAR_PLANE_SHADOW, game_constants::FAR_PLANE_SHADOW);
 
-    glm::mat4 lightProjection = glm::ortho(-25.0f, 25.0f, -25.0f, 25.0f, near_plane, far_plane);
     glm::mat4 lightView = glm::lookAt(
-        10.0f * SUN_LIGHT_DIR,
+        5.0f * SUN_LIGHT_DIR,
         glm::vec3(0.0f, 0.0f, 0.0f),
         glm::vec3(0.0f, 1.0f, 0.0f));
 
@@ -190,40 +182,8 @@ int main(void)
                 lightGroup.update_light_data();
             }
         }
-        
-
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)game_constants::SCR_WIDTH / (float)game_constants::SCR_HEIGHT, 0.1f, 100.0f);
-        glm::mat4 view = camera.GetViewMatrix();
-
-
-        skyboxShader->bind();
-        skyboxShader->addUniformMat4("projection", projection);
-        skyboxShader->addUniformMat4("view", view);
-        skyboxShader->unbind();     
-                
-        lightCubeShader->bind();
-        lightCubeShader->addUniformMat4("projection", projection);
-        lightCubeShader->addUniformMat4("view", view);
-        lightCubeShader->unbind();
-
-        cubeShader->bind();
-        cubeShader->addUniformMat4("projection", projection);
-        cubeShader->addUniformMat4("view", view);
-        cubeShader->addUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
-        cubeShader->unbind();
-
-        planeShader->bind();
-        planeShader->addUniformMat4("projection", projection);
-        planeShader->addUniformMat4("view", view);
-        planeShader->addUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
-        planeShader->addUniformMat4("lightSpaceMatrix", lightSpaceMatrix);
-        planeShader->unbind();
-
-        modelShader->bind();
-        modelShader->addUniformMat4("projection", projection);
-        modelShader->addUniformMat4("view", view);
-        modelShader->addUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
-        modelShader->unbind();
+       
+        SetupShaderUniforms(lightSpaceMatrix);
 
         // render
         // ------   
@@ -234,7 +194,9 @@ int main(void)
         glViewport(0, 0, game_constants::SHADOW_WIDTH, game_constants::SHADOW_HEIGHT);
         depth_fb->bind();
         glEnable(GL_DEPTH_TEST);
+        glCullFace(GL_FRONT);
         DrawSceneSimpleDepth(lightSpaceMatrix);
+        glCullFace(GL_BACK);
         depth_fb->unbind();
 
         glViewport(0, 0, game_constants::SCR_WIDTH, game_constants::SCR_HEIGHT);
@@ -297,8 +259,9 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 std::vector<glm::vec3> generatePositions(int numPointLights, std::vector<glm::mat4>& modelMatrices)
 {
 
-    float radius = 5.0f;
-    float offset = 2.5f;
+    float radius = 7.5f;
+    float offset = 3.0f;
+    float height_offset = 2.0f;
 
     std::vector<glm::vec3> positions;
     if (numPointLights != 0) positions.reserve(numPointLights);
@@ -311,7 +274,7 @@ std::vector<glm::vec3> generatePositions(int numPointLights, std::vector<glm::ma
         float displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
         float x = sin(angle) * radius + displacement;
         displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
-        float y = displacement * 0.4f; // keep height of field smaller compared to width of x and z
+        float y = height_offset + displacement * 0.4f; // keep height of field smaller compared to width of x and z
         displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
         float z = cos(angle) * radius + displacement;
 
@@ -320,8 +283,8 @@ std::vector<glm::vec3> generatePositions(int numPointLights, std::vector<glm::ma
 
         model = glm::translate(model, glm::vec3(x, y, z));
 
-        // 2. scale: scale between 0.05 and 0.25f
-        float scale = (rand() % 20) / 100.0f + 0.05;
+        // 2. scale: scale between 0.5 and 1.0f
+        float scale = static_cast<float>((rand() % 100) + 50) / 100.0f;
         model = glm::scale(model, glm::vec3(scale));
 
         // 3. rotation: add random rotation around a (semi)randomly picked rotation axis vector
@@ -348,7 +311,7 @@ void DrawScene() {
     lightCube->Draw(*lightCubeShader);
 
     // render cubes
-    //cubeGroup->Draw(*cubeShader);
+    cubeGroup->Draw(*cubeShader);
 
     // render floor
     floorPlane->Draw(*planeShader);
@@ -382,7 +345,7 @@ void DrawSceneSimpleDepth(const glm::mat4& lightSpaceMatrix) {
     glEnable(GL_DEPTH_TEST);
 
     // render cubes
-    //cubeGroup->Draw(*simpleDepthShader);
+    cubeGroup->Draw(*simpleDepthShader);
 
     // render floor
     floorPlane->Draw(*simpleDepthShader);
@@ -394,4 +357,40 @@ void DrawSceneSimpleDepth(const glm::mat4& lightSpaceMatrix) {
 
     skybox->Draw(camera.GetViewMatrix());
 
+}
+
+void SetupShaderUniforms(const glm::mat4& lightSpaceMatrix) {
+    glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)game_constants::SCR_WIDTH / (float)game_constants::SCR_HEIGHT, game_constants::NEAR_PLANE, game_constants::FAR_PLANE);
+    glm::mat4 view = camera.GetViewMatrix();
+
+
+    skyboxShader->bind();
+    skyboxShader->addUniformMat4("projection", projection);
+    skyboxShader->addUniformMat4("view", view);
+    skyboxShader->unbind();
+
+    lightCubeShader->bind();
+    lightCubeShader->addUniformMat4("projection", projection);
+    lightCubeShader->addUniformMat4("view", view);
+    lightCubeShader->unbind();
+
+    cubeShader->bind();
+    cubeShader->addUniformMat4("projection", projection);
+    cubeShader->addUniformMat4("view", view);
+    cubeShader->addUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
+    cubeShader->addUniformMat4("lightSpaceMatrix", lightSpaceMatrix);
+    cubeShader->unbind();
+
+    planeShader->bind();
+    planeShader->addUniformMat4("projection", projection);
+    planeShader->addUniformMat4("view", view);
+    planeShader->addUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
+    planeShader->addUniformMat4("lightSpaceMatrix", lightSpaceMatrix);
+    planeShader->unbind();
+
+    modelShader->bind();
+    modelShader->addUniformMat4("projection", projection);
+    modelShader->addUniformMat4("view", view);
+    modelShader->addUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
+    modelShader->unbind();
 }

@@ -58,6 +58,14 @@ inline namespace game_constants {
     inline constexpr unsigned int SHADOW_WIDTH = 1024;
     inline constexpr unsigned int SHADOW_HEIGHT = 1024;
 
+    inline constexpr float NEAR_PLANE = 0.1f;
+    inline constexpr float FAR_PLANE = 100.0f;
+
+    inline constexpr float NEAR_PLANE_SHADOW = 0.1f;
+    inline constexpr float FAR_PLANE_SHADOW = 50.0f;
+
+    inline constexpr glm::vec4 SHADOW_BOUNDING_BOX = glm::vec4(-20.0f, 20.0f, -20.0f, 20.0f);
+
     inline constexpr const char* POINT_LIGHT_LIST_NAME = "pointLights";
     inline constexpr const char* DIR_LIGHT_NAME = "sun";
 }

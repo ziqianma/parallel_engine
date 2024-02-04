@@ -1,14 +1,24 @@
 #include "framebuffer.h"
 
-FrameBuffer::FrameBuffer(const Shader& shader, std::unique_ptr<RenderBuffer> buffer, const std::string& textureName, unsigned int width, unsigned int height, GLenum attachment, GLenum internalFormat, GLenum format, GLenum dataType, const float quadVertices[]) :
-	m_FrameBufferWidth(width),
-	m_FrameBufferHeight(height),
-	m_FrameBufferTextureID(0),
-	m_FrameBufferTextureUnit(0),
-	m_QuadVAO(0),
-	m_QuadVBO(0),
-	m_RenderBuffer(nullptr)
+FrameBuffer::FrameBuffer(const Shader& shader, 
+	std::unique_ptr<RenderBuffer> buffer,
+	const std::string& textureName, 
+	unsigned int width, unsigned int height,
+	GLenum attachment, GLenum internalFormat, GLenum format, GLenum dataType,
+	const float quadVertices[]) 
+
+	:  m_FrameBufferWidth(width),
+		m_FrameBufferHeight(height),
+		m_FrameBufferTextureID(0),
+		m_FrameBufferTextureUnit(TextureLoader::GetAvailableTextureUnit(shader.get_shader_id(), textureName)),
+		m_QuadVAO(0),
+		m_QuadVBO(0),
+		m_RenderBuffer(nullptr)
 {
+	shader.bind();
+	shader.addUniform1i(textureName, m_FrameBufferTextureUnit);
+	shader.unbind();
+
 	glGenFramebuffers(1, &m_FrameBufferObject);
 	glBindFramebuffer(GL_FRAMEBUFFER, m_FrameBufferObject);
 
@@ -19,6 +29,11 @@ FrameBuffer::FrameBuffer(const Shader& shader, std::unique_ptr<RenderBuffer> buf
 	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, dataType, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+	float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
 	glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, m_FrameBufferTextureID, 0);
 
@@ -30,13 +45,6 @@ FrameBuffer::FrameBuffer(const Shader& shader, std::unique_ptr<RenderBuffer> buf
 		std::cout << "Failed to bind framebuffer! id: " << m_FrameBufferObject << std::endl;
 		return;
 	}
-	
-	unsigned int frameBufferTextureUnit = TextureLoader::GetAvailableTextureUnit(shader.get_shader_id(), textureName);
-	m_FrameBufferTextureUnit = frameBufferTextureUnit;
-
-	shader.bind();
-	shader.addUniform1i(textureName, frameBufferTextureUnit);
-	shader.unbind();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 

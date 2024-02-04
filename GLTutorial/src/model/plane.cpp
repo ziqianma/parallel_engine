@@ -1,9 +1,10 @@
 #include "plane.h"
 
 Plane::Plane(const Shader& shader, const std::string& texturePath, int depthMapTextureID) 
-    : m_DepthMapTextureID(depthMapTextureID)
+    : m_DepthMapTextureID(depthMapTextureID),
+      m_DepthMapTextureUnit(TextureLoader::GetAvailableTextureUnit(shader.get_shader_id(), "shadow_map"))
 {
-
+    shader.addUniform1i("shadow_map", m_DepthMapTextureUnit);
     loadPlaneTexture(shader, texturePath);
     setupPlaneMesh();
 }
@@ -39,9 +40,6 @@ void Plane::loadPlaneTexture(const Shader& shader, const std::string& texturePat
     shader.bind();
     shader.addUniform1i("material.texture_specular1", m_PlaneTextureUnit);
     shader.addUniform1i("material.texture_diffuse1", m_PlaneTextureUnit);
-
-    m_DepthMapTextureUnit = TextureLoader::GetAvailableTextureUnit(shader.get_shader_id(), "plane_depth_map");
-    shader.addUniform1i("shadowMap", m_DepthMapTextureUnit);
 
     shader.addUniform3f("material.ambient", 1.0f, 1.0f, 1.0f);
     shader.addUniform3f("material.diffuse", 1.0f, 1.0f, 1.0f);

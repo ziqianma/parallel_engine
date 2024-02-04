@@ -22,7 +22,7 @@ constexpr glm::vec3 MODEL_POSITIONS[NUM_MODELS] = {
     glm::vec3(3.5f,2.0f,2.0f)
 };
 
-constexpr glm::vec3 SUN_LIGHT_DIR = glm::vec3(-1.0f,1.0f,1.0f);
+constexpr glm::vec3 SUN_LIGHT_DIR = glm::vec3(-1.0f,1.0f,-1.0f);
 
 const LightData POINT_LIGHT_DATA(
     glm::vec3(.1f),
@@ -34,7 +34,7 @@ const LightData SUN_LIGHT_DATA(
     glm::vec3(.9f),
     glm::vec3(0.0f));
 
-inline constexpr unsigned int NUM_POINT_LIGHTS = 5;
+inline constexpr unsigned int NUM_POINT_LIGHTS = 0;
 
 const std::string WORKING_DIR = std::filesystem::current_path().generic_string();
 

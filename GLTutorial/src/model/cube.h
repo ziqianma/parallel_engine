@@ -54,6 +54,7 @@ class Cube {
 public:
     Cube(const std::vector<glm::mat4>& modelMatrices);
     Cube(const Shader& shader, const std::string& texturePath, const std::vector<glm::mat4>& modelMatrices);
+    Cube(const Shader& shader, const std::string& texturePath, const std::vector<glm::mat4>& modelMatrices, unsigned int depthMapTextureID);
     void Draw(const Shader &shader);
 private:
     unsigned int m_VAO, m_VBO;
@@ -61,8 +62,11 @@ private:
     unsigned int m_InstanceVBO;
     unsigned int m_NumInstances;
 
-    int m_CubeTextureID;
+    unsigned int m_CubeTextureID;
     unsigned int m_CubeTextureUnit;
+
+    unsigned int m_DepthMapTextureID;
+    unsigned int m_DepthMapTextureUnit;
 
     void setupCubeMesh();
     void loadCubeTexture(const Shader& shader, const std::string& texturePath);
