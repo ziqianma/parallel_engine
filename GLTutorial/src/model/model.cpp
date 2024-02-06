@@ -1,9 +1,26 @@
 #include "model.h"
 
+Model::Model(const std::string& path, const Shader& shader, const std::vector<glm::mat4>& modelMatrices, unsigned int depthTextureID) :
+	m_Shader(shader),
+	m_Directory(path.substr(0, path.find_last_of("/"))),
+	m_NumInstances(modelMatrices.size()),
+	m_DepthMapTextureID(depthTextureID),
+	m_DepthMapTextureUnit(TextureLoader::GetAvailableTextureUnit(shader.get_shader_id(), "shadow_map"))
+{
+	shader.bind();
+	shader.addUniform1i("shadow_map", m_DepthMapTextureUnit);
+	shader.unbind();
+
+	loadModel(path);
+	loadInstanceData(modelMatrices);
+}
+
 Model::Model(const std::string& path, const Shader& shader, const std::vector<glm::mat4>& modelMatrices) : 
 	m_Shader(shader),
 	m_Directory(path.substr(0, path.find_last_of("/"))),
-	m_NumInstances(modelMatrices.size())
+	m_NumInstances(modelMatrices.size()),
+	m_DepthMapTextureID(0),
+	m_DepthMapTextureUnit(0)
 {
 	loadModel(path);
 	loadInstanceData(modelMatrices);
@@ -135,9 +152,11 @@ void Model::processMesh(aiMesh* mesh, const aiScene* scene)
 		loadMaterialTextures(texturePaths, material, aiTextureType::aiTextureType_HEIGHT, "texture_bump");
 	}
 
-	for(const std::string& texturePath : texturePaths) m_ModelTexturePaths.insert(texturePath);
+	for (const std::string& texturePath : texturePaths) {
+		m_ModelTexturePaths.insert(texturePath);
+	}
 
-	m_Meshes.emplace_back(vertices, indices, texturePaths, numVerts, m_NumInstances);
+	m_Meshes.emplace_back(vertices, indices, texturePaths, numVerts, m_NumInstances, m_DepthMapTextureID, m_DepthMapTextureUnit);
 }
 
 void Model::loadMaterialTextures(std::vector<std::string>& texturePaths, aiMaterial* mat, aiTextureType type, const std::string& typeName) 
@@ -178,8 +197,6 @@ void Model::loadMaterialTextures(std::vector<std::string>& texturePaths, aiMater
 }
 
 void Model::Draw(const Shader& shader) {
-	shader.addUniformMat4("model", glm::mat4(1.0f));
-
 	for (Mesh& mesh : m_Meshes) {
 		mesh.Draw(shader);
 	}

@@ -18,6 +18,7 @@
 
 class Model {
 public:
+	Model(const std::string& path, const Shader& shader, const std::vector<glm::mat4>& modelMatrices, unsigned int depthMapTextureID);
 	Model(const std::string& path, const Shader& shader, const std::vector<glm::mat4>& modelMatrices);
 	~Model();
 	void Draw(const Shader& shader);
@@ -28,6 +29,9 @@ private:
 	Shader m_Shader;
 	unsigned int m_NumInstances;
 	unsigned int m_InstanceVBO;
+
+	unsigned int m_DepthMapTextureID;
+	unsigned int m_DepthMapTextureUnit;
 
 	void loadInstanceData(const std::vector<glm::mat4>& modelMatrices);
 	void loadModel(const std::string& path);

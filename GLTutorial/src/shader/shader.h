@@ -12,6 +12,7 @@ private:
     unsigned int _shaderProgram;
 public:
     Shader(const char* vertexShaderPath, const char* fragmentShaderPath);
+
     unsigned int get_shader_id() const;
     void bind() const;
     void unbind() const;

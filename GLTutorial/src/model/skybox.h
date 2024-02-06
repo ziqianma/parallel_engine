@@ -7,7 +7,7 @@
 
 class Skybox {
 public:
-	Skybox(const Shader& shader) : m_Shader(shader) {
+	Skybox(const Shader& shader) {
         stbi_set_flip_vertically_on_load(false);
         m_Texture = TextureLoader::LoadSkyboxTexture(shader.get_shader_id(), "resources/skybox", "texture_skybox");
 		stbi_set_flip_vertically_on_load(true);
@@ -29,18 +29,18 @@ public:
 		glBindVertexArray(0);
 	}
 
-    void Draw(const glm::mat4& viewMatrix) {
+    void Draw(const Shader& shader, const glm::mat4& viewMatrix) {
         // set depth function to less than or equal (all skybox depth vales are 1.0)
         glDepthFunc(GL_LEQUAL);
 
-        m_Shader.bind();
-        m_Shader.addUniformMat4("view", glm::mat4(glm::mat3(viewMatrix)));
+        shader.bind();
+        shader.addUniformMat4("view", glm::mat4(glm::mat3(viewMatrix)));
 
         glBindVertexArray(VAO);
         glActiveTexture(GL_TEXTURE0 + m_Texture->texUnit);
         glBindTexture(GL_TEXTURE_CUBE_MAP, m_Texture->id);
         glDrawArrays(GL_TRIANGLES, 0, 36);
-        m_Shader.unbind();
+        shader.unbind();
 
         glDepthFunc(GL_LESS);
     }
@@ -48,7 +48,6 @@ public:
 private:
 	unsigned int VAO, VBO;
 	std::unique_ptr<Texture> m_Texture;
-    Shader m_Shader;
 
     float skyboxVertices[108] = {
         // positions          

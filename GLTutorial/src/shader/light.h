@@ -107,12 +107,11 @@ public:
 		return *(m_LightList[index].get());
 	}
 
-	void update_light_data();
+	void update_light_data(const std::vector<Shader>& shaders);
 private:
 	std::string m_Name;
 
 	std::vector<std::unique_ptr<Light>> m_LightList;
 	std::vector<unsigned int> m_PointLightIndexes;
 	unsigned int m_DirLightIndex;
-	std::vector<Shader> m_Shaders;
 };

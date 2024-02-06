@@ -26,7 +26,6 @@ void PointLight::setup_light(const Shader& shader) const {
 }
 
 LightGroup::LightGroup(const std::vector<Shader>& shaders, const LightData& pointLight, const std::vector<glm::vec3>& positions, const LightData& dirLight, const glm::vec3& direction)
-    : m_Shaders(shaders)
 {
     if (!positions.empty()) {
         m_LightList.reserve(1 + positions.size());
@@ -54,8 +53,8 @@ LightGroup::LightGroup(const std::vector<Shader>& shaders, const LightData& poin
     }
 }
 
-void LightGroup::update_light_data() {
-    for (const Shader& shader : m_Shaders) {
+void LightGroup::update_light_data(const std::vector<Shader>& shaders) {
+    for (const Shader& shader : shaders) {
         for (auto& light : m_LightList) {
             light->setup_light(shader);
         }

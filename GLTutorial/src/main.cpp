@@ -57,7 +57,7 @@ int main(void)
     std::cout << glGetString(GL_VERSION) << std::endl;
 
     // create shader
-    modelShader = std::make_unique<Shader>("shaders/main.vs", "shaders/main.fs");
+    modelShader = std::make_unique<Shader>("shaders/main.vs", "shaders/shadow.fs");
 
     lightCubeShader = std::make_unique<Shader>("shaders/cube.vs", "shaders/unlit.fs");
     cubeShader = std::make_unique<Shader>("shaders/cube.vs", "shaders/shadow.fs");
@@ -75,8 +75,9 @@ int main(void)
         game_constants::QUAD2_VERTICES);
 
     std::vector<glm::mat4> lightCube_ModelMatrices;
+    std::vector<Shader> litShaders = { *modelShader, *planeShader, *cubeShader };
 
-    LightGroup lightGroup(std::vector<Shader>({ *modelShader, *planeShader, *cubeShader }),
+    LightGroup lightGroup(litShaders,
         POINT_LIGHT_DATA,
         generatePositions(NUM_POINT_LIGHTS, lightCube_ModelMatrices),
         SUN_LIGHT_DATA, 
@@ -97,7 +98,7 @@ int main(void)
     skybox = std::make_unique<Skybox>(*skyboxShader);
 
     // Create other game objs
-    ourModel = std::make_unique<Model>(WORKING_DIR + "/" + "resources/model/backpack/backpack.obj", *modelShader, model_ModelMatrices);
+    ourModel = std::make_unique<Model>(WORKING_DIR + "/" + "resources/model/dragon/dragon.obj", *modelShader, model_ModelMatrices, depth_fb->getTextureID());
     lightCube = std::make_unique<Cube>(*lightCubeShader, WORKING_DIR + "/" + "resources/redstone_lamp_on.png", lightCube_ModelMatrices);
 
     cubeGroup = std::make_unique<Cube>(*cubeShader, WORKING_DIR + "/" + "resources/gold_block.png", cube_ModelMatrices, depth_fb->getTextureID());
@@ -109,7 +110,6 @@ int main(void)
     int frameCount = 0;
 
     float angle = 0;
-
 
     // light space matrix
     glm::mat4 lightProjection = glm::ortho(
@@ -124,6 +124,8 @@ int main(void)
     glm::mat4 lightSpaceMatrix = lightProjection * lightView;
 
     glm::vec3 point_light_diffuse = POINT_LIGHT_DATA.diffuse;
+
+    bool debug = true;
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
@@ -153,6 +155,11 @@ int main(void)
             ourModel = nullptr;
         }
 
+
+        if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) {
+            debug = !debug;
+        }
+
         if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
             if (glm::any(glm::greaterThan(point_light_diffuse, glm::vec3(0.0f)))) {
                 point_light_diffuse -= dt * glm::vec3(0.1f);
@@ -164,7 +171,7 @@ int main(void)
                 for (int i = 1; i < NUM_POINT_LIGHTS + 1; i++) {
                     lightGroup[i].set_diffuse(point_light_diffuse);
                 }
-                lightGroup.update_light_data();
+                lightGroup.update_light_data(litShaders);
             }
         }        
         
@@ -179,7 +186,7 @@ int main(void)
                 for (int i = 1; i < NUM_POINT_LIGHTS + 1; i++) {
                     lightGroup[i].set_diffuse(point_light_diffuse);
                 }
-                lightGroup.update_light_data();
+                lightGroup.update_light_data(litShaders);
             }
         }
        
@@ -204,12 +211,14 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         DrawScene();
 
-        // final pass, draw framebuffer quad
-        glDisable(GL_DEPTH_TEST);
-        depthQuadShader->bind();
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-        depth_fb->draw_onto_quad();
-        depthQuadShader->unbind();
+        if (debug) {
+            // final pass, draw framebuffer quad
+            glDisable(GL_DEPTH_TEST);
+            depthQuadShader->bind();
+            glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+            depth_fb->draw_onto_quad();
+            depthQuadShader->unbind();
+        }
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
@@ -326,7 +335,7 @@ void DrawScene() {
         ourModel->Draw(*modelShader);
     }
 
-    skybox->Draw(camera.GetViewMatrix());
+    skybox->Draw(*skyboxShader, camera.GetViewMatrix());
 
 }
 
@@ -355,7 +364,7 @@ void DrawSceneSimpleDepth(const glm::mat4& lightSpaceMatrix) {
         ourModel->Draw(*simpleDepthShader);
     }
 
-    skybox->Draw(camera.GetViewMatrix());
+    skybox->Draw(*skyboxShader, camera.GetViewMatrix());
 
 }
 
@@ -392,5 +401,6 @@ void SetupShaderUniforms(const glm::mat4& lightSpaceMatrix) {
     modelShader->addUniformMat4("projection", projection);
     modelShader->addUniformMat4("view", view);
     modelShader->addUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
+    modelShader->addUniformMat4("lightSpaceMatrix", lightSpaceMatrix);
     modelShader->unbind();
 }

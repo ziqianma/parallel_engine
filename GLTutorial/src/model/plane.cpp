@@ -4,7 +4,10 @@ Plane::Plane(const Shader& shader, const std::string& texturePath, int depthMapT
     : m_DepthMapTextureID(depthMapTextureID),
       m_DepthMapTextureUnit(TextureLoader::GetAvailableTextureUnit(shader.get_shader_id(), "shadow_map"))
 {
+    shader.bind();
     shader.addUniform1i("shadow_map", m_DepthMapTextureUnit);
+    shader.unbind();
+
     loadPlaneTexture(shader, texturePath);
     setupPlaneMesh();
 }

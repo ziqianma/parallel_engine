@@ -2,9 +2,11 @@
 
 // Constrctor intializes mesh data along with VAO, VBO and EBO
 
-Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<std::string>& texturePaths, unsigned int numVerts, unsigned int numInstances) :
+Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<std::string>& texturePaths, unsigned int numVerts, unsigned int numInstances, unsigned int depthTextureID, unsigned int depthTextureUnit) :
 	m_NumVerts(numVerts),
-	m_NumInstances(numInstances)
+	m_NumInstances(numInstances),
+	m_DepthTextureID(depthTextureID),
+	m_DepthTextureUnit(depthTextureUnit)
 {
 	setupMesh(vertices, indices);
 
@@ -52,6 +54,9 @@ void Mesh::Draw(const Shader& shader) {
 		glActiveTexture(GL_TEXTURE0 + m_TextureUnits[i]);
 		glBindTexture(GL_TEXTURE_2D, m_TextureIDs[i]);
 	}
+
+	glActiveTexture(GL_TEXTURE0 + m_DepthTextureUnit);
+	glBindTexture(GL_TEXTURE_2D, m_DepthTextureID);
 
 	shader.bind();
 	// draw mesh

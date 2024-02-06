@@ -109,7 +109,7 @@ void Shader::createShaderProgram() {
 
 
     glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    glDeleteShader(fragmentShader); 
 
     _shaderProgram = shaderProgram;
 }
