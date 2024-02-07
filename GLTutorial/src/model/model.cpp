@@ -26,12 +26,6 @@ Model::Model(const std::string& path, const Shader& shader, const std::vector<gl
 	loadInstanceData(modelMatrices);
 }
 
-Model::~Model() {
-	for (const std::string& texturePath : m_ModelTexturePaths) {
-		TextureLoader::DeleteTexture(m_Shader.get_shader_id(), texturePath);
-	}
-}
-
 void Model::loadInstanceData(const std::vector<glm::mat4>& modelMatrices) 
 {
 	glGenBuffers(1, &m_InstanceVBO);
@@ -104,7 +98,7 @@ void Model::processMesh(aiMesh* mesh, const aiScene* scene)
 
 	std::vector<Vertex> vertices;
 	std::vector<unsigned int> indices;
-	std::vector<std::string> texturePaths;
+	UnloadedTextureList textures;
 
 	unsigned int numVerts = mesh->mNumVertices;
 	vertices.reserve(numVerts);
@@ -145,21 +139,17 @@ void Model::processMesh(aiMesh* mesh, const aiScene* scene)
 		int diffuseTexCount = material->GetTextureCount(aiTextureType::aiTextureType_DIFFUSE);
 		int specularTexCount = material->GetTextureCount(aiTextureType::aiTextureType_SPECULAR);
 		int normalTexCount = material->GetTextureCount(aiTextureType::aiTextureType_NORMALS);
-		texturePaths.reserve(diffuseTexCount + specularTexCount + normalTexCount);
+		textures.reserve(diffuseTexCount + specularTexCount + normalTexCount);
 
-		loadMaterialTextures(texturePaths, material, aiTextureType::aiTextureType_DIFFUSE, "texture_diffuse");
-		loadMaterialTextures(texturePaths, material, aiTextureType::aiTextureType_SPECULAR, "texture_specular");
-		loadMaterialTextures(texturePaths, material, aiTextureType::aiTextureType_HEIGHT, "texture_bump");
+		loadMaterialTextures(textures, material, aiTextureType::aiTextureType_DIFFUSE, "texture_diffuse");
+		loadMaterialTextures(textures, material, aiTextureType::aiTextureType_SPECULAR, "texture_specular");
+		loadMaterialTextures(textures, material, aiTextureType::aiTextureType_HEIGHT, "texture_bump");
 	}
 
-	for (const std::string& texturePath : texturePaths) {
-		m_ModelTexturePaths.insert(texturePath);
-	}
-
-	m_Meshes.emplace_back(vertices, indices, texturePaths, numVerts, m_NumInstances, m_DepthMapTextureID, m_DepthMapTextureUnit);
+	m_Meshes.emplace_back(Mesh(m_Shader, vertices, indices, textures, numVerts, m_NumInstances, m_DepthMapTextureID, m_DepthMapTextureUnit));
 }
 
-void Model::loadMaterialTextures(std::vector<std::string>& texturePaths, aiMaterial* mat, aiTextureType type, const std::string& typeName) 
+void Model::loadMaterialTextures(UnloadedTextureList& textures, aiMaterial* mat, aiTextureType type, const std::string& typeName) 
 {
 	aiColor3D ambient, diffuse, specular;
 	mat->Get(AI_MATKEY_COLOR_AMBIENT, ambient);
@@ -177,22 +167,8 @@ void Model::loadMaterialTextures(std::vector<std::string>& texturePaths, aiMater
 		aiString texturePath;
 		mat->GetTexture(type, i, &texturePath);
 
-		std::string path = m_Directory + "/" + std::string(texturePath.C_Str());
-
-		// Load texture from loader
-		TextureLoader::LoadTexture(m_Shader.get_shader_id(), path, typeName);
-
-		// Add as uniform
-		// typeNumber is i+1 since 0th texture is texture_(type)1
-		std::string typeNumber = std::to_string(i + 1);
-		int textureUnit = TextureLoader::GetTexture(path).texUnit;
-
-		m_Shader.bind();
-		m_Shader.addUniform1i(("material." + typeName + typeNumber), textureUnit);
-		m_Shader.unbind();
-
 		// add to textures list to pass to mesh
-		texturePaths.push_back(path);
+		textures.emplace_back(std::make_pair(m_Directory + "/" + std::string(texturePath.C_Str()), typeName));
 	}
 }
 

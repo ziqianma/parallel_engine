@@ -1,26 +1,44 @@
 #include "cube.h"
 
-Cube::Cube(const std::vector<glm::mat4>& modelMatrices) :
-    m_CubeTextureID(-1),
-    m_NumInstances(modelMatrices.size())
-{
-    setupCubeMesh();
-    setupInstances(modelMatrices);
-}
-
-Cube::Cube(const Shader& shader, const std::string& texturePath, const std::vector<glm::mat4>& modelMatrices) :
+Cube::Cube(const Shader& shader, const std::vector<glm::mat4>& modelMatrices) :
+    m_ShaderProgramID(shader.get_shader_id()),
     m_NumInstances(modelMatrices.size()),
-    m_CubeTextureID(-1),
     m_InstanceVBO(0),
     m_VAO(0),
     m_VBO(0),
-    m_CubeTextureUnit(0)
+    m_DepthMapTextureID(0),
+    m_DepthMapTextureUnit(0),
+    m_CubeTexture(nullptr)
 {
     if (m_NumInstances != 0) {
-        loadCubeTexture(shader, texturePath);
+        bind_uniforms(shader);
 
-        setupCubeMesh();
-        setupInstances(modelMatrices);
+        setup_mesh();
+        setup_instances(modelMatrices);
+    }
+}
+
+Cube::~Cube() {
+    if (m_CubeTexture) {
+        TextureLoader::DeleteTexture(m_ShaderProgramID, m_CubeTexture->path);
+    }
+}
+
+Cube::Cube(const Shader& shader, const std::string& texturePath, const std::vector<glm::mat4>& modelMatrices) :
+    m_ShaderProgramID(shader.get_shader_id()), 
+    m_NumInstances(modelMatrices.size()),
+    m_InstanceVBO(0),
+    m_VAO(0),
+    m_VBO(0),
+    m_DepthMapTextureID(0),
+    m_DepthMapTextureUnit(0),
+    m_CubeTexture(std::make_unique<Texture>(TextureLoader::LoadTexture(shader.get_shader_id(), texturePath, "texture_diffuse")))
+{
+    if (m_NumInstances != 0) {
+        bind_uniforms(shader);
+
+        setup_mesh();
+        setup_instances(modelMatrices);
     }
 }
 
@@ -35,27 +53,26 @@ Cube::Cube(const Shader& shader, const std::string& texturePath, const std::vect
     shader.unbind();
 }
 
-void Cube::loadCubeTexture(const Shader& shader, const std::string& texturePath) 
+void Cube::bind_uniforms(const Shader& shader)
 {
-    TextureLoader::LoadTexture(shader.get_shader_id(), texturePath, "texture_diffuse");
-
-    const Texture& temp = TextureLoader::GetTexture(texturePath);
-    m_CubeTextureID = temp.id;
-    m_CubeTextureUnit = temp.texUnit;
-
     shader.bind();
-    shader.addUniform1i("material.texture_diffuse1", m_CubeTextureUnit);
-    shader.addUniform1i("material.texture_specular1", m_CubeTextureUnit);
+    shader.addUniformMat4("model", glm::mat4(1.0f));
 
     shader.addUniform3f("material.ambient", 1.0f, 1.0f, 1.0f);
     shader.addUniform3f("material.diffuse", 1.0f, 1.0f, 1.0f);
     shader.addUniform3f("material.specular", 1.0f, 1.0f, 1.0f);
     shader.addUniform1f("material.shininess", 128.0f);
+
+    if (m_CubeTexture) {
+        shader.addUniform1i("material.texture_diffuse1", m_CubeTexture->texUnit);
+        shader.addUniform1i("material.texture_specular1", m_CubeTexture->texUnit);
+    }
+
     shader.unbind();
 }
 
 
-void Cube::setupCubeMesh() 
+void Cube::setup_mesh() 
 {
     glGenVertexArrays(1, &m_VAO);
     glGenBuffers(1, &m_VBO);
@@ -76,7 +93,7 @@ void Cube::setupCubeMesh()
     glBindVertexArray(0);
 }
 
-void Cube::setupInstances(std::vector<glm::mat4> modelMatrices)
+void Cube::setup_instances(std::vector<glm::mat4> modelMatrices)
 {
     glGenBuffers(1, &m_InstanceVBO);
     glBindBuffer(GL_ARRAY_BUFFER, m_InstanceVBO);
@@ -104,17 +121,15 @@ void Cube::setupInstances(std::vector<glm::mat4> modelMatrices)
 
 void Cube::Draw(const Shader& shader) 
 {
-    shader.bind();
-    shader.addUniformMat4("model", glm::mat4(1.0f));
-    bool hasTexture = m_CubeTextureID != -1;
-    if (hasTexture) {
-        glActiveTexture(GL_TEXTURE0 + m_CubeTextureUnit);
-        glBindTexture(GL_TEXTURE_2D, m_CubeTextureID);
+    if (m_CubeTexture) {
+        glActiveTexture(GL_TEXTURE0 + m_CubeTexture->texUnit);
+        glBindTexture(GL_TEXTURE_2D, m_CubeTexture->id);
     }
 
     glActiveTexture(GL_TEXTURE0 + m_DepthMapTextureUnit);
     glBindTexture(GL_TEXTURE_2D, m_DepthMapTextureID);
 
+    shader.bind();
     // draw mesh
     glBindVertexArray(m_VAO);
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO);

@@ -365,7 +365,6 @@ void DrawSceneSimpleDepth(const glm::mat4& lightSpaceMatrix) {
     }
 
     skybox->Draw(*skyboxShader, camera.GetViewMatrix());
-
 }
 
 void SetupShaderUniforms(const glm::mat4& lightSpaceMatrix) {

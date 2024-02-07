@@ -15,13 +15,12 @@ struct Vertex {
 
 class Mesh {
 public:
-	Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<std::string>& texturePaths, unsigned int numVerts, unsigned int numInstances, unsigned int depthTextureID, unsigned int depthTextureUnit);
+	Mesh(const Shader& shader, const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const UnloadedTextureList& textures, unsigned int numVerts, unsigned int numInstances, unsigned int depthTextureID, unsigned int depthTextureUnit);
 	void Draw(const Shader& shader);
 	void BindMeshVAO() const { glBindVertexArray(VAO); };
 private:
 	unsigned int VAO, VBO, EBO;
-	std::vector<int> m_TextureIDs;
-	std::vector<int> m_TextureUnits;
+	std::vector<Texture> m_Textures;
 
 	unsigned int m_DepthTextureID;
 	unsigned int m_DepthTextureUnit;
@@ -29,5 +28,6 @@ private:
 	unsigned int m_NumVerts;
 	unsigned int m_NumInstances;
 
-	void setupMesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices);
+	void setup_mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices);
+	void load_textures(const Shader& shader, const UnloadedTextureList& textures);
 };

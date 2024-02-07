@@ -20,11 +20,10 @@ class Model {
 public:
 	Model(const std::string& path, const Shader& shader, const std::vector<glm::mat4>& modelMatrices, unsigned int depthMapTextureID);
 	Model(const std::string& path, const Shader& shader, const std::vector<glm::mat4>& modelMatrices);
-	~Model();
 	void Draw(const Shader& shader);
 private:
 	std::vector<Mesh> m_Meshes;
-	std::unordered_set<std::string> m_ModelTexturePaths;
+
 	std::string m_Directory;
 	Shader m_Shader;
 	unsigned int m_NumInstances;
@@ -37,6 +36,6 @@ private:
 	void loadModel(const std::string& path);
 	void processNode(aiNode* node, const aiScene* scene);
 	void processMesh(aiMesh* mesh, const aiScene* scene);		
-	void loadMaterialTextures(std::vector<std::string>& texturePaths, aiMaterial* mat, aiTextureType type, const std::string& typeName);
+	void loadMaterialTextures(UnloadedTextureList& textures, aiMaterial* mat, aiTextureType type, const std::string& typeName);
 
 };	

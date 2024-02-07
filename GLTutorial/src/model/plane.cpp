@@ -1,23 +1,26 @@
 #include "plane.h"
 
-Plane::Plane(const Shader& shader, const std::string& texturePath, int depthMapTextureID) 
+Plane::Plane(const Shader& shader, const std::string& texturePath, int depthMapTextureID)
     : m_DepthMapTextureID(depthMapTextureID),
-      m_DepthMapTextureUnit(TextureLoader::GetAvailableTextureUnit(shader.get_shader_id(), "shadow_map"))
+    m_DepthMapTextureUnit(TextureLoader::GetAvailableTextureUnit(shader.get_shader_id(), "shadow_map")),
+    m_ShaderProgramID(shader.get_shader_id()),
+    m_PlaneTexture(TextureLoader::LoadTexture(shader.get_shader_id(), texturePath, "texture_diffuse"))
 {
+
     shader.bind();
     shader.addUniform1i("shadow_map", m_DepthMapTextureUnit);
     shader.unbind();
 
-    loadPlaneTexture(shader, texturePath);
-    setupPlaneMesh();
+    bind_uniforms(shader);
+    setup_mesh();
 }
 
 void Plane::Draw(const Shader& shader)
 {
     shader.bind();
     shader.addUniformMat4("model", glm::mat4(1.0f));
-    glActiveTexture(GL_TEXTURE0 + m_PlaneTextureUnit);
-    glBindTexture(GL_TEXTURE_2D, m_PlaneTextureID);
+    glActiveTexture(GL_TEXTURE0 + m_PlaneTexture.texUnit);
+    glBindTexture(GL_TEXTURE_2D, m_PlaneTexture.id);
     
     glActiveTexture(GL_TEXTURE0 + m_DepthMapTextureUnit);
     glBindTexture(GL_TEXTURE_2D, m_DepthMapTextureID);
@@ -32,17 +35,11 @@ void Plane::Draw(const Shader& shader)
     glBindVertexArray(0);
 }
 
-void Plane::loadPlaneTexture(const Shader& shader, const std::string& texturePath)
-{
-    TextureLoader::LoadTexture(shader.get_shader_id(), texturePath, "texture_diffuse");
-
-    const Texture& temp = TextureLoader::GetTexture(texturePath);
-    m_PlaneTextureID = temp.id;
-    m_PlaneTextureUnit = temp.texUnit;
-       
+void Plane::bind_uniforms(const Shader& shader)
+{      
     shader.bind();
-    shader.addUniform1i("material.texture_specular1", m_PlaneTextureUnit);
-    shader.addUniform1i("material.texture_diffuse1", m_PlaneTextureUnit);
+    shader.addUniform1i("material.texture_specular1", m_PlaneTexture.texUnit);
+    shader.addUniform1i("material.texture_diffuse1", m_PlaneTexture.texUnit);
 
     shader.addUniform3f("material.ambient", 1.0f, 1.0f, 1.0f);
     shader.addUniform3f("material.diffuse", 1.0f, 1.0f, 1.0f);
@@ -52,6 +49,8 @@ void Plane::loadPlaneTexture(const Shader& shader, const std::string& texturePat
 }
 
 Plane::~Plane() {
+    TextureLoader::DeleteTexture(m_ShaderProgramID, m_PlaneTexture.path);
+
     glDeleteBuffers(1, &m_InstanceVBO);
     glDeleteBuffers(1, &m_VBO);
     glDeleteVertexArrays(1, &m_VAO);
@@ -59,7 +58,7 @@ Plane::~Plane() {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void Plane::setupPlaneMesh()
+void Plane::setup_mesh()
 {
     glGenVertexArrays(1, &m_VAO);
     glGenBuffers(1, &m_VBO);

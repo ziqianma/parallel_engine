@@ -4,36 +4,24 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-Texture::~Texture() {
-	// deallocate texture from gl context
-	unsigned int texID = id;
-	glDeleteTextures(1, &texID);
-}
-
 TextureData::~TextureData() {
 	stbi_image_free(data);
 }
 
 void TextureLoader::DeleteTexture(unsigned int shaderProgramID, const std::string& path) {
-	// delete from loaded textures map, free up texture unit for use.
-
-	// move unqiue_ptr from static map to this unique ptr (hold reference)
-	std::unique_ptr<Texture> texturePtr = std::move(s_LoadedTextures[path]);
-
-	// delete map ref to now hollow unqiue_ptr
-	if (texturePtr) {
-		s_LoadedTextures.erase(path);
-
+	if (s_LoadedTextures.count(path) == 1) {
 		// get texture unit and set that unit back to being available for its shader
-		s_AvailableTextureUnits[shaderProgramID][texturePtr->texUnit] = 1;
+		Texture texture = s_LoadedTextures.find(path)->second;
 
-		// delete unique_ptr
-		texturePtr.reset();
+		s_AvailableTextureUnits[shaderProgramID][texture.texUnit] = 1;
+
+		// deallocate texture from GPU
+		unsigned int texID = texture.id;
+		glDeleteTextures(1, &texID);
+
+		// delete from loaded textures map, free up texture unit for use
+		s_LoadedTextures.erase(path);
 	}
-}
-
-const Texture& TextureLoader::GetTexture(const std::string& path) {
-	return *(s_LoadedTextures[path]).get();
 }
 
 void TextureLoader::LoadData(const std::string& path, const std::string& type, int id) 
@@ -125,34 +113,33 @@ unsigned int TextureLoader::GetAvailableTextureUnit(unsigned int shaderProgramID
 	return textureUnit;
 }
 
-void TextureLoader::LoadTexture(unsigned int shaderProgramID, const std::string& path, const std::string &typeName)
+const Texture& TextureLoader::LoadTexture(unsigned int shaderProgramID, const std::string& path, const std::string &typeName)
 {
-
-	// check if currently requested texture has already been "loaded", if so, don't do anything.
-	for (const auto& [texPath, texture] : s_LoadedTextures) {
-		if (path == texPath) {
-			return;
-		}
-	}	
+	if (s_LoadedTextures.count(path) == 1) {
+		return s_LoadedTextures.find(path)->second;
+	}
 
 	// load texture (async or non-async) then place in loaded texture hashmap
-	unsigned int textureID;
+	unsigned int textureID = 0;
 	glGenTextures(1, &textureID);
 
 	// If a texture is being initialized for the first time, set that texture unit "unavaialble" and assign
 	unsigned int textureUnit = GetAvailableTextureUnit(shaderProgramID, path);
 
-	// push uniquely managed texture pointer into loaded texture map.
-	s_LoadedTextures[path] = std::make_unique<Texture>(textureID, typeName, textureUnit);
+	// push texture obj into loaded texture map.
+	s_LoadedTextures.emplace(path, Texture(path, textureID, typeName, textureUnit));
 
 #if ASYNC
 	s_Futures.push_back(std::async(std::launch::async, LoadData, path, typeName, textureID));
 #else
 	TextureFromFile(id, path, false, typeName);
 #endif
+
+	return s_LoadedTextures.find(path)->second;
+	
 }
 
-std::unique_ptr<Texture> TextureLoader::LoadSkyboxTexture(unsigned int skyboxShaderID, const std::string& path, const std::string& textureType)
+Texture TextureLoader::LoadSkyboxTexture(unsigned int skyboxShaderID, const std::string& path, const std::string& textureType)
 {
 	unsigned int textureID;
 	glGenTextures(1, &textureID);
@@ -186,7 +173,7 @@ std::unique_ptr<Texture> TextureLoader::LoadSkyboxTexture(unsigned int skyboxSha
 	unsigned int textureUnit = GetAvailableTextureUnit(skyboxShaderID, path);
 
 	// move pointer ownership to skybox class
-	return std::make_unique<Texture>(textureID, textureType, textureUnit);
+	return Texture(path, textureID, textureType, textureUnit);
 }
 
 #if ASYNC

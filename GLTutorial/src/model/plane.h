@@ -23,16 +23,17 @@ public:
     ~Plane();
     void Draw(const Shader& shader);
 private:
+    unsigned int m_ShaderProgramID;
+
     unsigned int m_VAO, m_VBO;
     unsigned int m_InstanceVBO;
 
-    unsigned int m_PlaneTextureID;
-    unsigned int m_PlaneTextureUnit;
+    Texture m_PlaneTexture;
 
     unsigned int m_DepthMapTextureID;
     unsigned int m_DepthMapTextureUnit;
 
 
-    void setupPlaneMesh();
-    void loadPlaneTexture(const Shader& shader, const std::string& texturePath);
+    void setup_mesh();
+    void bind_uniforms(const Shader& shader);
 };

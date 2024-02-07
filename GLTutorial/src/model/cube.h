@@ -52,7 +52,8 @@ static float CUBE_VERTS[288] = {
 
 class Cube {
 public:
-    Cube(const std::vector<glm::mat4>& modelMatrices);
+    Cube(const Shader& shader, const std::vector<glm::mat4>& modelMatrices);
+    ~Cube();
     Cube(const Shader& shader, const std::string& texturePath, const std::vector<glm::mat4>& modelMatrices);
     Cube(const Shader& shader, const std::string& texturePath, const std::vector<glm::mat4>& modelMatrices, unsigned int depthMapTextureID);
     void Draw(const Shader &shader);
@@ -61,14 +62,14 @@ private:
 
     unsigned int m_InstanceVBO;
     unsigned int m_NumInstances;
+    unsigned int m_ShaderProgramID;
 
-    unsigned int m_CubeTextureID;
-    unsigned int m_CubeTextureUnit;
+    std::unique_ptr<Texture> m_CubeTexture;
 
     unsigned int m_DepthMapTextureID;
     unsigned int m_DepthMapTextureUnit;
 
-    void setupCubeMesh();
-    void loadCubeTexture(const Shader& shader, const std::string& texturePath);
-    void setupInstances(const std::vector<glm::mat4> modelMatrices);
+    void setup_mesh();
+    void bind_uniforms(const Shader& shader);
+    void setup_instances(const std::vector<glm::mat4> modelMatrices);
 };

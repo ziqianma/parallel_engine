@@ -2,22 +2,34 @@
 
 // Constrctor intializes mesh data along with VAO, VBO and EBO
 
-Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<std::string>& texturePaths, unsigned int numVerts, unsigned int numInstances, unsigned int depthTextureID, unsigned int depthTextureUnit) :
+Mesh::Mesh(const Shader& shader, const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const UnloadedTextureList& textures, unsigned int numVerts, unsigned int numInstances, unsigned int depthTextureID, unsigned int depthTextureUnit) :
 	m_NumVerts(numVerts),
 	m_NumInstances(numInstances),
 	m_DepthTextureID(depthTextureID),
 	m_DepthTextureUnit(depthTextureUnit)
 {
-	setupMesh(vertices, indices);
+	setup_mesh(vertices, indices);
+	load_textures(shader, textures);
+}
 
-	for (const std::string& texturePath : texturePaths) {
-		const Texture& temp = TextureLoader::GetTexture(texturePath);
-		m_TextureIDs.push_back(temp.id);
-		m_TextureUnits.push_back(temp.texUnit);
+void Mesh::load_textures(const Shader& shader, const UnloadedTextureList& textures) {
+	// Load texture from loader
+	int i = 0;
+	for (const auto& [path, type] : textures) {
+		const Texture& loaded = TextureLoader::LoadTexture(shader.get_shader_id(), path, type);
+
+		std::string typeNumber = std::to_string(i + 1);
+
+		shader.bind();
+		shader.addUniform1i(("material." + type + typeNumber), loaded.texUnit);
+		shader.unbind();
+
+		m_Textures.emplace_back(loaded);
+		i++;
 	}
 }
 
-void Mesh::setupMesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices) {
+void Mesh::setup_mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices) {
 	//AutoProfiler profiler("Mesh::setupMesh()");
 	// Generate VAO and VBO/EBO
 	glGenVertexArrays(1, &VAO);
@@ -50,9 +62,9 @@ void Mesh::setupMesh(const std::vector<Vertex>& vertices, const std::vector<unsi
 }
 
 void Mesh::Draw(const Shader& shader) {
-	for (int i = 0; i < m_TextureIDs.size(); i++) {
-		glActiveTexture(GL_TEXTURE0 + m_TextureUnits[i]);
-		glBindTexture(GL_TEXTURE_2D, m_TextureIDs[i]);
+	for (const Texture& texture : m_Textures) {
+		glActiveTexture(GL_TEXTURE0 + texture.texUnit);
+		glBindTexture(GL_TEXTURE_2D, texture.id);
 	}
 
 	glActiveTexture(GL_TEXTURE0 + m_DepthTextureUnit);
