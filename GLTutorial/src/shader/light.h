@@ -31,6 +31,8 @@ public:
 		m_LightData(lightData)
 	{}
 
+	virtual ~Light() {}
+
 	void set_diffuse(const glm::vec3& diffuse) { m_LightData.diffuse = diffuse; }
 protected:
 	LightData m_LightData;
