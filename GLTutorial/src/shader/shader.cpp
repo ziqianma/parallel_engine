@@ -32,32 +32,43 @@ Shader::Shader(const char* vertexShaderPath, const char* fragmentShaderPath) {
 }
 
 void Shader::addUniform4f(const std::string& name, float x, float y, float z, float w) const {
-    glUniform4f(glGetUniformLocation(_shaderProgram, name.c_str()), x, y, z, w);
+    glUniform4f(glGetUniformLocation(m_ShaderProgram, name.c_str()), x, y, z, w);
 }
 
 void Shader::addUniform3f(const std::string& name, float x, float y, float z) const {
-    glUseProgram(_shaderProgram);
-    glUniform3f(glGetUniformLocation(_shaderProgram, name.c_str()), x, y, z);
+    glUniform3f(glGetUniformLocation(m_ShaderProgram, name.c_str()), x, y, z);
 }
 
 void Shader::addUniform1i(const std::string& name, int x) const {
-    glUniform1i(glGetUniformLocation(_shaderProgram, name.c_str()), x);
+    glUniform1i(glGetUniformLocation(m_ShaderProgram, name.c_str()), x);
 }
 
 void Shader::addUniform1f(const std::string& name, float x) const {
-    glUniform1f(glGetUniformLocation(_shaderProgram, name.c_str()), x);
+    glUniform1f(glGetUniformLocation(m_ShaderProgram, name.c_str()), x);
 }
 
-void Shader::addUniformMat4(const std::string& name, glm::mat4 data) const {
-    glUniformMatrix4fv(glGetUniformLocation(_shaderProgram, name.c_str()), 1, GL_FALSE, glm::value_ptr(data));
+void Shader::addUniformMat4(const std::string& name, const glm::mat4& data) const {
+    glUniformMatrix4fv(glGetUniformLocation(m_ShaderProgram, name.c_str()), 1, GL_FALSE, glm::value_ptr(data));
 }
 
-void Shader::addUniformMat3(const std::string& name, glm::mat3 data) const {
-    glUniformMatrix3fv(glGetUniformLocation(_shaderProgram, name.c_str()), 1, GL_FALSE, glm::value_ptr(data));
+void Shader::addUniformMat3(const std::string& name, const glm::mat3& data) const {
+    glUniformMatrix3fv(glGetUniformLocation(m_ShaderProgram, name.c_str()), 1, GL_FALSE, glm::value_ptr(data));
+}
+
+void Shader::addUniformMaterial(const std::string& name, const Material& material) const
+{
+    for (const Texture& texture : material.textures) {
+        addUniform1i(name + "." + type_name_map[texture.textureType] + "1", texture.texUnit);
+    }
+
+    addUniform3f(name + ".ambient", material.ambient.x, material.ambient.y, material.ambient.z);
+    addUniform3f(name + ".diffuse", material.diffuse.x, material.diffuse.y, material.diffuse.z);
+    addUniform3f(name + ".specular", material.specular.x, material.specular.y, material.specular.z);
+    addUniform1f(name + ".shininess", material.shininess);
 }
 
 void Shader::bind() const {
-    glUseProgram(_shaderProgram);
+    glUseProgram(m_ShaderProgram);
 }
 
 void Shader::unbind() const {
@@ -65,7 +76,7 @@ void Shader::unbind() const {
 }
 
 unsigned int Shader::get_shader_id() const {
-    return _shaderProgram;
+    return m_ShaderProgram;
 }
 
 void Shader::createShaderProgram() {
@@ -111,5 +122,5 @@ void Shader::createShaderProgram() {
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader); 
 
-    _shaderProgram = shaderProgram;
+    m_ShaderProgram = shaderProgram;
 }

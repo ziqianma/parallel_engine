@@ -24,7 +24,7 @@ public:
 private:
 	unsigned int m_VAO, m_VBO;
 
-	std::unique_ptr<DepthTexture> m_DepthTexture;
+	std::unique_ptr<Texture> m_DepthTexture;
 	std::unique_ptr<float> m_Vertices;
 	Transform m_Transform;
 	Shader m_Shader;

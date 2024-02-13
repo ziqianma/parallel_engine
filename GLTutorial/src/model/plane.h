@@ -1,6 +1,7 @@
 #pragma once
 
 #include "shader/shader.h"
+#include "shader/material.h"
 #include "mesh.h"
 #include "common.h"
 #include "util/textures.h"
@@ -29,11 +30,8 @@ private:
     unsigned int m_InstanceVBO;
 
     Texture m_PlaneTexture;
+    Texture m_DepthMapTexture;
 
-    unsigned int m_DepthMapTextureID;
-    unsigned int m_DepthMapTextureUnit;
-
-
-    void setup_mesh();
-    void bind_uniforms(const Shader& shader);
+    void setup_mesh(); 
+    void setup_material(const Shader& shader);
 };

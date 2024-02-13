@@ -1,17 +1,11 @@
 #include "plane.h"
 
 Plane::Plane(const Shader& shader, const std::string& texturePath, int depthMapTextureID)
-    : m_DepthMapTextureID(depthMapTextureID),
-    m_DepthMapTextureUnit(TextureLoader::GetAvailableTextureUnit(shader.get_shader_id(), "shadow_map")),
+    : m_DepthMapTexture("", depthMapTextureID, TextureType::TEXTURE_DEPTH, TextureLoader::GetAvailableTextureUnit(shader.get_shader_id(), type_name_map[TextureType::TEXTURE_DEPTH])),
     m_ShaderProgramID(shader.get_shader_id()),
     m_PlaneTexture(TextureLoader::LoadTexture(shader.get_shader_id(), texturePath, TextureType::TEXTURE_DIFFUSE))
 {
-
-    shader.bind();
-    shader.addUniform1i("shadow_map", m_DepthMapTextureUnit);
-    shader.unbind();
-
-    bind_uniforms(shader);
+    setup_material(shader);
     setup_mesh();
 }
 
@@ -22,8 +16,8 @@ void Plane::Draw(const Shader& shader)
     glActiveTexture(GL_TEXTURE0 + m_PlaneTexture.texUnit);
     glBindTexture(GL_TEXTURE_2D, m_PlaneTexture.id);
     
-    glActiveTexture(GL_TEXTURE0 + m_DepthMapTextureUnit);
-    glBindTexture(GL_TEXTURE_2D, m_DepthMapTextureID);
+    glActiveTexture(GL_TEXTURE0 + m_DepthMapTexture.texUnit);
+    glBindTexture(GL_TEXTURE_2D, m_DepthMapTexture.id);
 
     // draw mesh
     glBindVertexArray(m_VAO);
@@ -35,16 +29,16 @@ void Plane::Draw(const Shader& shader)
     glBindVertexArray(0);
 }
 
-void Plane::bind_uniforms(const Shader& shader)
+void Plane::setup_material(const Shader& shader)
 {      
-    shader.bind();
-    shader.addUniform1i("material.texture_specular1", m_PlaneTexture.texUnit);
-    shader.addUniform1i("material.texture_diffuse1", m_PlaneTexture.texUnit);
+    Texture specularTexture = m_PlaneTexture;
+    specularTexture.textureType = TextureType::TEXTURE_SPECULAR;
 
-    shader.addUniform3f("material.ambient", 1.0f, 1.0f, 1.0f);
-    shader.addUniform3f("material.diffuse", 1.0f, 1.0f, 1.0f);
-    shader.addUniform3f("material.specular", 1.0f, 1.0f, 1.0f);
-    shader.addUniform1f("material.shininess", 4.0f);
+    Material material = Material(std::vector<Texture>{specularTexture, m_PlaneTexture, m_DepthMapTexture},
+        glm::vec3(1.0f), glm::vec3(1.0f), glm::vec3(1.0f), 1.0f);
+
+    shader.bind();
+    shader.addUniformMaterial("material", material);
     shader.unbind();
 }
 

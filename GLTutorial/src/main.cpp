@@ -99,9 +99,10 @@ int main(void)
 
     // Create other game objs
     ourModel = std::make_unique<Model>(WORKING_DIR + "/" + "resources/model/dragon/dragon.obj", *modelShader, model_ModelMatrices, depth_fb->getTextureID());
-    lightCube = std::make_unique<Cube>(*lightCubeShader, WORKING_DIR + "/" + "resources/redstone_lamp_on.png", lightCube_ModelMatrices);
 
+    lightCube = std::make_unique<Cube>(*lightCubeShader, WORKING_DIR + "/" + "resources/redstone_lamp_on.png", lightCube_ModelMatrices);
     cubeGroup = std::make_unique<Cube>(*cubeShader, WORKING_DIR + "/" + "resources/gold_block.png", cube_ModelMatrices, depth_fb->getTextureID());
+
     floorPlane = std::make_unique<Plane>(*planeShader, WORKING_DIR + "/" + "resources/floor2.jpg", depth_fb->getTextureID());
 
     // timing

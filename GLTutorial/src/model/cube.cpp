@@ -1,41 +1,17 @@
 #include "cube.h"
 
-Cube::Cube(const Shader& shader, const std::vector<glm::mat4>& modelMatrices) :
-    m_ShaderProgramID(shader.get_shader_id()),
-    m_NumInstances(modelMatrices.size()),
-    m_InstanceVBO(0),
-    m_VAO(0),
-    m_VBO(0),
-    m_DepthMapTextureID(0),
-    m_DepthMapTextureUnit(0),
-    m_CubeTexture(nullptr)
-{
-    if (m_NumInstances != 0) {
-        bind_uniforms(shader);
-
-        setup_mesh();
-        setup_instances(modelMatrices);
-    }
-}
-
-Cube::~Cube() {
-    if (m_CubeTexture) {
-        TextureLoader::DeleteTexture(m_ShaderProgramID, m_CubeTexture->path);
-    }
-}
-
 Cube::Cube(const Shader& shader, const std::string& texturePath, const std::vector<glm::mat4>& modelMatrices) :
-    m_ShaderProgramID(shader.get_shader_id()), 
-    m_NumInstances(modelMatrices.size()),
-    m_InstanceVBO(0),
     m_VAO(0),
     m_VBO(0),
-    m_DepthMapTextureID(0),
-    m_DepthMapTextureUnit(0),
-    m_CubeTexture(std::make_unique<Texture>(TextureLoader::LoadTexture(shader.get_shader_id(), texturePath, TextureType::TEXTURE_DIFFUSE)))
+    m_InstanceVBO(0),
+    m_NumInstances(modelMatrices.size()),
+    m_ShaderProgramID(shader.get_shader_id()),
+    m_CubeTexture(TextureLoader::LoadTexture(shader.get_shader_id(), texturePath, TextureType::TEXTURE_DIFFUSE)),
+    m_DepthMapTexture(nullptr)
 {
     if (m_NumInstances != 0) {
-        bind_uniforms(shader);
+
+        setup_material(shader);
 
         setup_mesh();
         setup_instances(modelMatrices);
@@ -43,34 +19,43 @@ Cube::Cube(const Shader& shader, const std::string& texturePath, const std::vect
 }
 
 Cube::Cube(const Shader& shader, const std::string& texturePath, const std::vector<glm::mat4>& modelMatrices, unsigned int depthMapTextureID) :
-    Cube(shader, texturePath, modelMatrices)
+    m_VAO(0),
+    m_VBO(0),
+    m_InstanceVBO(0),
+    m_NumInstances(modelMatrices.size()),
+    m_ShaderProgramID(shader.get_shader_id()),
+    m_CubeTexture(TextureLoader::LoadTexture(shader.get_shader_id(), texturePath, TextureType::TEXTURE_DIFFUSE)),
+    m_DepthMapTexture(std::make_unique<Texture>("", depthMapTextureID, TextureType::TEXTURE_DEPTH, TextureLoader::GetAvailableTextureUnit(shader.get_shader_id(), type_name_map[TextureType::TEXTURE_DEPTH])))
 {
-    m_DepthMapTextureID = depthMapTextureID;
-    m_DepthMapTextureUnit = TextureLoader::GetAvailableTextureUnit(shader.get_shader_id(), "shadow_map");
+    if (m_NumInstances != 0) {
+        setup_mesh();
+        setup_instances(modelMatrices);
 
-    shader.bind();
-    shader.addUniform1i("shadow_map", m_DepthMapTextureUnit);
-    shader.unbind();
+        setup_material(shader);
+    }
 }
 
-void Cube::bind_uniforms(const Shader& shader)
+Cube::~Cube() {
+    TextureLoader::DeleteTexture(m_ShaderProgramID, m_CubeTexture.path);
+}
+
+
+void Cube::setup_material(const Shader& shader)
 {
-    shader.bind();
-    shader.addUniformMat4("model", glm::mat4(1.0f));
+    Texture specularTexture = m_CubeTexture;
+    specularTexture.textureType = TextureType::TEXTURE_SPECULAR;
 
-    shader.addUniform3f("material.ambient", 1.0f, 1.0f, 1.0f);
-    shader.addUniform3f("material.diffuse", 1.0f, 1.0f, 1.0f);
-    shader.addUniform3f("material.specular", 1.0f, 1.0f, 1.0f);
-    shader.addUniform1f("material.shininess", 128.0f);
-
-    if (m_CubeTexture) {
-        shader.addUniform1i("material.texture_diffuse1", m_CubeTexture->texUnit);
-        shader.addUniform1i("material.texture_specular1", m_CubeTexture->texUnit);
+    std::vector<Texture> textureList = std::vector<Texture>{ specularTexture, m_CubeTexture };
+    if (m_DepthMapTexture) {
+        textureList.push_back(*m_DepthMapTexture);
     }
 
+    Material material = Material(textureList, glm::vec3(1.0f), glm::vec3(1.0f), glm::vec3(1.0f), 128.0f);
+
+    shader.bind();
+    shader.addUniformMaterial("material", material);
     shader.unbind();
 }
-
 
 void Cube::setup_mesh() 
 {
@@ -121,15 +106,17 @@ void Cube::setup_instances(std::vector<glm::mat4> modelMatrices)
 
 void Cube::Draw(const Shader& shader) 
 {
-    if (m_CubeTexture) {
-        glActiveTexture(GL_TEXTURE0 + m_CubeTexture->texUnit);
-        glBindTexture(GL_TEXTURE_2D, m_CubeTexture->id);
+    shader.bind();
+    shader.addUniformMat4("model", glm::mat4(1.0f));
+
+    glActiveTexture(GL_TEXTURE0 + m_CubeTexture.texUnit);
+    glBindTexture(GL_TEXTURE_2D, m_CubeTexture.id);
+
+    if (m_DepthMapTexture) {
+        glActiveTexture(GL_TEXTURE0 + m_DepthMapTexture->texUnit);
+        glBindTexture(GL_TEXTURE_2D, m_DepthMapTexture->id);
     }
 
-    glActiveTexture(GL_TEXTURE0 + m_DepthMapTextureUnit);
-    glBindTexture(GL_TEXTURE_2D, m_DepthMapTextureID);
-
-    shader.bind();
     // draw mesh
     glBindVertexArray(m_VAO);
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO);

@@ -5,10 +5,10 @@ Model::Model(const std::string& path, const Shader& shader, const std::vector<gl
 	m_Directory(path.substr(0, path.find_last_of("/"))),
 	m_NumInstances(modelMatrices.size()),
 	m_DepthMapTextureID(depthTextureID),
-	m_DepthMapTextureUnit(TextureLoader::GetAvailableTextureUnit(shader.get_shader_id(), "shadow_map"))
+	m_DepthMapTextureUnit(TextureLoader::GetAvailableTextureUnit(shader.get_shader_id(), "material.map_depth1"))
 {
 	shader.bind();
-	shader.addUniform1i("shadow_map", m_DepthMapTextureUnit);
+	shader.addUniform1i("material.map_depth1", m_DepthMapTextureUnit);
 	shader.unbind();
 
 	loadModel(path);
