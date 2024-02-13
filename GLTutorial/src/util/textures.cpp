@@ -24,12 +24,13 @@ void TextureLoader::DeleteTexture(unsigned int shaderProgramID, const std::strin
 	}
 }
 
-void TextureLoader::LoadData(const std::string& path, const std::string& type, int id) 
+void TextureLoader::LoadData(Texture texture)
 {
 	int width = 0, height = 0, nrComponents = 0;
-	unsigned char* data = stbi_load(path.c_str(), &width, &height, &nrComponents, 0);
+	unsigned char* data = stbi_load(texture.path.c_str(), &width, &height, &nrComponents, 0);
 	std::lock_guard<std::mutex> lock(s_ImageMutex);
-	s_ProcessingQueue.emplace(id, path, width, height, nrComponents, data, type);
+
+	s_ProcessingQueue.emplace(texture, width, height, nrComponents, data);
 }
 
 void TextureLoader::Update() 
@@ -41,7 +42,8 @@ void TextureLoader::Update()
 		int width = toLoad.width;
 		int height = toLoad.height;
 
-		unsigned int id = toLoad.id;
+		unsigned int id = toLoad.texture.id;
+		TextureType texType = toLoad.texture.textureType;
 
 		unsigned char* data = toLoad.data;
 
@@ -56,11 +58,11 @@ void TextureLoader::Update()
 				break;
 			case 3:
 				format = GL_RGB;
-				internalformat = (toLoad.type == "texture_diffuse") ? GL_SRGB : format;
+				internalformat = (texType == TextureType::TEXTURE_DIFFUSE) ? GL_SRGB : format;
 				break;
 			case 4:
 				format = GL_RGBA;
-				internalformat = (toLoad.type == "texture_diffuse") ? GL_SRGB_ALPHA : format;
+				internalformat = (texType == TextureType::TEXTURE_DIFFUSE) ? GL_SRGB_ALPHA : format;
 				break;
 			default:
 				break;
@@ -83,11 +85,11 @@ void TextureLoader::Update()
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-			std::cout << "Loaded: " << toLoad.path << std::endl << "(width, height) : (" << width << ", " << height << "), Texture ID: " << toLoad.id << std::endl;
+			std::cout << "Loaded: " << toLoad.texture.path << std::endl << "(width, height) : (" << width << ", " << height << "), Texture ID: " << id << std::endl;
 		}
 		else
 		{
-			std::cout << "Texture failed to load at path: " << toLoad.path << std::endl;
+			std::cout << "Texture failed to load at path: " << toLoad.texture.path << std::endl;
 		}
 		s_ProcessingQueue.pop();
 	}
@@ -113,7 +115,7 @@ unsigned int TextureLoader::GetAvailableTextureUnit(unsigned int shaderProgramID
 	return textureUnit;
 }
 
-const Texture& TextureLoader::LoadTexture(unsigned int shaderProgramID, const std::string& path, const std::string &typeName)
+const Texture& TextureLoader::LoadTexture(unsigned int shaderProgramID, const std::string& path, TextureType type)
 {
 	if (s_LoadedTextures.count(path) == 1) {
 		return s_LoadedTextures.find(path)->second;
@@ -127,10 +129,10 @@ const Texture& TextureLoader::LoadTexture(unsigned int shaderProgramID, const st
 	unsigned int textureUnit = GetAvailableTextureUnit(shaderProgramID, path);
 
 	// push texture obj into loaded texture map.
-	s_LoadedTextures.emplace(path, Texture(path, textureID, typeName, textureUnit));
+	s_LoadedTextures.emplace(path, Texture(path, textureID, type, textureUnit));
 
 #if ASYNC
-	s_Futures.push_back(std::async(std::launch::async, LoadData, path, typeName, textureID));
+	s_Futures.push_back(std::async(std::launch::async, LoadData, Texture(path, textureID, type, textureUnit)));
 #else
 	TextureFromFile(id, path, false, typeName);
 #endif
@@ -139,7 +141,7 @@ const Texture& TextureLoader::LoadTexture(unsigned int shaderProgramID, const st
 	
 }
 
-Texture TextureLoader::LoadSkyboxTexture(unsigned int skyboxShaderID, const std::string& path, const std::string& textureType)
+Texture TextureLoader::LoadSkyboxTexture(unsigned int skyboxShaderID, const std::string& path)
 {
 	unsigned int textureID;
 	glGenTextures(1, &textureID);
@@ -173,7 +175,7 @@ Texture TextureLoader::LoadSkyboxTexture(unsigned int skyboxShaderID, const std:
 	unsigned int textureUnit = GetAvailableTextureUnit(skyboxShaderID, path);
 
 	// move pointer ownership to skybox class
-	return Texture(path, textureID, textureType, textureUnit);
+	return Texture(path, textureID, TextureType::TEXTURE_CUBEMAP, textureUnit);
 }
 
 #if ASYNC

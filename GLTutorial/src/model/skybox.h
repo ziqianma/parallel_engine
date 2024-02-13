@@ -9,12 +9,12 @@ class Skybox {
 public:
     Skybox(const Shader& shader) : m_Texture(nullptr) {
         stbi_set_flip_vertically_on_load(false);
-        m_Texture = std::make_unique<Texture>(TextureLoader::LoadSkyboxTexture(shader.get_shader_id(), "resources/skybox", "texture_skybox"));
+        m_Texture = std::make_unique<Texture>(TextureLoader::LoadSkyboxTexture(shader.get_shader_id(), "resources/skybox"));
         stbi_set_flip_vertically_on_load(true);
 
         if (m_Texture) {
             shader.bind();
-            shader.addUniform1i(m_Texture->type + "1", 0);
+            shader.addUniform1i(type_name_map[m_Texture->textureType] + "1", 0);
             shader.unbind();
 
             glGenVertexArrays(1, &VAO);

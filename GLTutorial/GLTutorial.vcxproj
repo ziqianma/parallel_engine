@@ -178,7 +178,9 @@
     <ClInclude Include="src\model\model.h" />
     <ClInclude Include="src\model\plane.h" />
     <ClInclude Include="src\model\skybox.h" />
+    <ClInclude Include="src\model\transform.h" />
     <ClInclude Include="src\shader\light.h" />
+    <ClInclude Include="src\shader\material.h" />
     <ClInclude Include="src\shader\shader.h" />
     <ClInclude Include="src\util\camera.h" />
     <ClInclude Include="src\util\framebuffer.h" />

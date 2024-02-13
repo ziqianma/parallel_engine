@@ -4,7 +4,7 @@ Plane::Plane(const Shader& shader, const std::string& texturePath, int depthMapT
     : m_DepthMapTextureID(depthMapTextureID),
     m_DepthMapTextureUnit(TextureLoader::GetAvailableTextureUnit(shader.get_shader_id(), "shadow_map")),
     m_ShaderProgramID(shader.get_shader_id()),
-    m_PlaneTexture(TextureLoader::LoadTexture(shader.get_shader_id(), texturePath, "texture_diffuse"))
+    m_PlaneTexture(TextureLoader::LoadTexture(shader.get_shader_id(), texturePath, TextureType::TEXTURE_DIFFUSE))
 {
 
     shader.bind();

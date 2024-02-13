@@ -32,7 +32,7 @@ Cube::Cube(const Shader& shader, const std::string& texturePath, const std::vect
     m_VBO(0),
     m_DepthMapTextureID(0),
     m_DepthMapTextureUnit(0),
-    m_CubeTexture(std::make_unique<Texture>(TextureLoader::LoadTexture(shader.get_shader_id(), texturePath, "texture_diffuse")))
+    m_CubeTexture(std::make_unique<Texture>(TextureLoader::LoadTexture(shader.get_shader_id(), texturePath, TextureType::TEXTURE_DIFFUSE)))
 {
     if (m_NumInstances != 0) {
         bind_uniforms(shader);

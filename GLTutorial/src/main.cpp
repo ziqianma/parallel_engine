@@ -30,7 +30,7 @@ int main(void)
     srand(glfwGetTime()); // initialize random seed	
 
     /* Create a windowed mode window and its OpenGL context */
-    GLFWwindow* window = glfwCreateWindow(game_constants::SCR_WIDTH, game_constants::SCR_HEIGHT, "Learn", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(game_constants::SCR_WIDTH, game_constants::SCR_HEIGHT, game_constants::WINDOW_HANDLE, NULL, NULL);
 
     if (!window)
     {

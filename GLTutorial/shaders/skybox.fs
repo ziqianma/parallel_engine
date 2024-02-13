@@ -3,8 +3,8 @@ out vec4 FragColor;
 
 in vec3 textureDir;
 
-uniform samplerCube texture_skybox1;
+uniform samplerCube texture_cubemap1;
 
 void main() {
-	FragColor = texture(texture_skybox1, textureDir);
+	FragColor = texture(texture_cubemap1, textureDir);
 }

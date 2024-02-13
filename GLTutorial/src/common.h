@@ -68,4 +68,13 @@ inline namespace game_constants {
 
     inline constexpr const char* POINT_LIGHT_LIST_NAME = "pointLights";
     inline constexpr const char* DIR_LIGHT_NAME = "sun";
+
+    inline constexpr const char* WINDOW_HANDLE = "Parallel Engine";
+
+    inline constexpr const char* AMBIENT_TEXTURE_NAME = "texture_ambient";
+    inline constexpr const char* DIFFUSE_TEXTURE_NAME = "texture_diffuse";
+    inline constexpr const char* SPECULAR_TEXTURE_NAME = "texture_specular";
+    inline constexpr const char* CUBEMAP_TEXTURE_NAME = "texture_cubemap";
+
+    inline constexpr const char* DEPTH_TEXTURE_NAME = "map_depth";
 }

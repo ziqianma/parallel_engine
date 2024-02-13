@@ -15,13 +15,13 @@ Mesh::Mesh(const Shader& shader, const std::vector<Vertex>& vertices, const std:
 void Mesh::load_textures(const Shader& shader, const UnloadedTextureList& textures) {
 	// Load texture from loader
 	int i = 0;
-	for (const auto& [path, type] : textures) {
-		const Texture& loaded = TextureLoader::LoadTexture(shader.get_shader_id(), path, type);
+	for (const auto& [path, typeIndex] : textures) {
+		const Texture& loaded = TextureLoader::LoadTexture(shader.get_shader_id(), path, static_cast<TextureType>(typeIndex));
 
 		std::string typeNumber = std::to_string(i + 1);
 
 		shader.bind();
-		shader.addUniform1i(("material." + type + typeNumber), loaded.texUnit);
+		shader.addUniform1i(("material." + type_name_map[typeIndex] + typeNumber), loaded.texUnit);
 		shader.unbind();
 
 		m_Textures.emplace_back(loaded);

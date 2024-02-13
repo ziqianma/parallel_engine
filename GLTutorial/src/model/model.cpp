@@ -141,15 +141,14 @@ void Model::processMesh(aiMesh* mesh, const aiScene* scene)
 		int normalTexCount = material->GetTextureCount(aiTextureType::aiTextureType_NORMALS);
 		textures.reserve(diffuseTexCount + specularTexCount + normalTexCount);
 
-		loadMaterialTextures(textures, material, aiTextureType::aiTextureType_DIFFUSE, "texture_diffuse");
-		loadMaterialTextures(textures, material, aiTextureType::aiTextureType_SPECULAR, "texture_specular");
-		loadMaterialTextures(textures, material, aiTextureType::aiTextureType_HEIGHT, "texture_bump");
+		loadMaterialTextures(textures, material, TextureType::TEXTURE_DIFFUSE, aiTextureType::aiTextureType_DIFFUSE);
+		loadMaterialTextures(textures, material, TextureType::TEXTURE_SPECULAR, aiTextureType::aiTextureType_SPECULAR);
 	}
 
 	m_Meshes.emplace_back(Mesh(m_Shader, vertices, indices, textures, numVerts, m_NumInstances, m_DepthMapTextureID, m_DepthMapTextureUnit));
 }
 
-void Model::loadMaterialTextures(UnloadedTextureList& textures, aiMaterial* mat, aiTextureType type, const std::string& typeName) 
+void Model::loadMaterialTextures(UnloadedTextureList& textures, aiMaterial* mat, TextureType type, aiTextureType nativeType) 
 {
 	aiColor3D ambient, diffuse, specular;
 	mat->Get(AI_MATKEY_COLOR_AMBIENT, ambient);
@@ -163,12 +162,12 @@ void Model::loadMaterialTextures(UnloadedTextureList& textures, aiMaterial* mat,
 	m_Shader.addUniform1f("material.shininess", 128.0f);
 	m_Shader.unbind();
 	
-	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++) {
+	for (unsigned int i = 0; i < mat->GetTextureCount(nativeType); i++) {
 		aiString texturePath;
-		mat->GetTexture(type, i, &texturePath);
+		mat->GetTexture(nativeType, i, &texturePath);
 
 		// add to textures list to pass to mesh
-		textures.emplace_back(std::make_pair(m_Directory + "/" + std::string(texturePath.C_Str()), typeName));
+		textures.emplace_back(std::make_pair(m_Directory + "/" + std::string(texturePath.C_Str()), static_cast<unsigned int>(type)));
 	}
 }
 
